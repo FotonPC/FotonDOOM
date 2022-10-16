@@ -1,0 +1,2 @@
+#TargetFrameworkVersion=:PlatformToolSet=v141:EnableManagedIncrementalBuild=false:VCToolArchitecture=Native64Bit:WindowsTargetPlatformVersion=10.0.19041.0
+Release Static|x64|C:\Users\foton\source\repos\FotonDOOM_cpp_win32\|
