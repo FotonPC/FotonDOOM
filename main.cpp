@@ -82,13 +82,27 @@ int main()
     sf::RenderWindow window(sf::VideoMode(RESOLUTION_X, RESOLUTION_Y), "FotonDOOM on C++");
     
     Engine3D engine;
-    engine.init(1.5, 1.5, 90, "resources\\images\\bg" + std::to_string(ry) + ".png", ray_step_koef, rx, ry);
-    engine.set_map("level.map");
+    engine.init(1.5, 1.5, 90, "resources\\images\\bg2_" + std::to_string(ry) + ".png", ray_step_koef, rx, ry, 2);
+    RectSprite3D a;
+    //RectSprite3D a;
+    a.init(4.75,  9, 0.1, 0.5, ry, ry, ry, 0, 13, 12, 14);
+    engine.add_sprite(a, 0);
+    RectSprite3D b;
+    //RectSprite3D a;
+    b.init(4.25, 9, 0.5, 0.2, ry, ry, ry, 1, 2, 4, 4);
+    engine.add_sprite(b, 1);
+    engine.set_map("resources\\maps\\flat1.map");
     engine.load_texture(0, "resources\\images\\textures\\parquet"+ std::to_string(ry)+".png");
     engine.load_texture(1, "resources\\images\\textures\\brick" + std::to_string(ry) + ".png");
     engine.load_texture(11, "resources\\images\\textures\\up" + std::to_string(ry) + ".png");
     engine.load_texture(2, "resources\\images\\textures\\wood" + std::to_string(ry) + ".png");
     engine.load_texture(3, "resources\\images\\textures\\marble" + std::to_string(ry) + ".png");
+    engine.load_texture(15, "resources\\images\\textures\\plika_" + std::to_string(ry) + ".png");
+    engine.load_texture(12, "resources\\images\\sprites\\door_1\\1_" + std::to_string(ry) + ".png");
+    engine.load_texture(13, "resources\\images\\sprites\\door_1\\2_" + std::to_string(ry) + ".png");
+    engine.load_texture(14, "resources\\images\\sprites\\door_1\\1_2_" + std::to_string(ry) + ".png");
+    engine.load_texture(4, "resources\\images\\textures\\shukat_" + std::to_string(ry) + ".png");
+    engine.load_texture(9, "resources\\images\\textures\\lift_" + std::to_string(ry) + ".png");
     //engine.load_texture(4, "resources\\images\\textures\\stone_old" + std::to_string(ry) + ".png");
     //engine.load_texture(5, "resources\\images\\textures\\door" + std::to_string(ry) + ".png");
     //engine.load_texture(10, "resources\\images\\textures\\fog" + std::to_string(ry) + ".png");
@@ -127,7 +141,7 @@ int main()
             {
                 if (engine.page == 1) {
                     try {
-                        engine.angle -= sf::Mouse::getPosition(window).x - (int)window.getSize().x / 2 + 8;
+                        engine.angle -= sf::Mouse::getPosition(window).x - (int)window.getSize().x / 2 + 9;
                         while (engine.angle >= 360) {
                             engine.angle -= 360.0;
                         }
@@ -149,6 +163,25 @@ int main()
                 real_height = event.size.height;
             }
             if (event.type == sf::Event::KeyPressed) {
+                if (event.key.code == sf::Keyboard::Space) {
+                    cout << engine.x << " " << engine.y << endl;
+                    double a;
+                    a = engine.sprites_objects[0].x_size;
+                    engine.sprites_objects[0].x_size = engine.sprites_objects[0].y_size;
+                    engine.sprites_objects[0].y_size = a;
+                    engine.sprites_objects[0].orient_x = 1 - engine.sprites_objects[0].orient_x;
+                    
+                    if (engine.sprites_objects[0].y == 9.05) {
+                        engine.sprites_objects[0].y = 9.25;
+                        engine.sprites_objects[0].x = 4.95;
+                    }
+                    else {
+                        engine.sprites_objects[0].y = 9.05;
+                        engine.sprites_objects[0].x = 4.75;
+                    }
+                    
+                   
+                }
                 if (event.key.code == sf::Keyboard::Enter) {
                     if (engine.page == 0) {
                         engine.page = 1;
@@ -166,10 +199,16 @@ int main()
             }
         }
         sf::Time time = clock.getElapsedTime();
-        if (iteration_counter % 60 == 0) {
-            cout << 1.0f / time.asSeconds() << endl;
-        }
         fps = 1.0f / time.asSeconds();
+        try {
+            if (fps > 1 && iteration_counter % to_int(fps) < fps / 5.0) {
+                window.setTitle("FotonDOOM: FPS: " + to_string(to_int(fps)));
+            }
+        }
+        catch (...) {
+
+        }
+        
         clock.restart().asSeconds();
 
         window.clear();
