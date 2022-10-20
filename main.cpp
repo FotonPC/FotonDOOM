@@ -82,15 +82,23 @@ int main()
     sf::RenderWindow window(sf::VideoMode(RESOLUTION_X, RESOLUTION_Y), "FotonDOOM on C++");
     
     Engine3D engine;
-    engine.init(1.5, 1.5, 90, "resources\\images\\bg2_" + std::to_string(ry) + ".png", ray_step_koef, rx, ry, 2);
+    engine.init(1.5, 1.5, 90, "resources\\images\\bg2_" + std::to_string(ry) + ".png", ray_step_koef, rx, ry, 2,2);
     RectSprite3D a;
     //RectSprite3D a;
     a.init(4.75,  9, 0.1, 0.5, ry, ry, ry, 0, 13, 12, 14);
-    engine.add_sprite(a, 0);
+    engine.add_rect_sprite(a, 0);
     RectSprite3D b;
     //RectSprite3D a;
     b.init(4.25, 9, 0.5, 0.2, ry, ry, ry, 1, 2, 4, 4);
-    engine.add_sprite(b, 1);
+    FlatSprite3D c;
+    c.init(1.5, 1.5, 1, 1, 0, ry, ry);
+    c.load_texture(0, "resources\\images\\star512.png");
+    engine.add_flat_sprite(c, 0);
+    FlatSprite3D d;
+    d.init(1.5, 2.5, 0, 1, 1, ry, ry);
+    d.load_texture(1, "resources\\images\\bed512.png");
+    engine.add_flat_sprite(d, 1);
+    engine.add_rect_sprite(b, 1);
     engine.set_map("resources\\maps\\flat1.map");
     engine.load_texture(0, "resources\\images\\textures\\parquet"+ std::to_string(ry)+".png");
     engine.load_texture(1, "resources\\images\\textures\\brick" + std::to_string(ry) + ".png");

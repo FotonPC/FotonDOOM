@@ -4,71 +4,228 @@
   C:\Users\foton\source\repos\FotonDOOM_cpp_win32\resources\sansation.ttf
   Скопировано файлов:         2.
   main.cpp
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(37): warning C4244: return: преобразование "double" в "int", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(76): warning C4101: k: неиспользованная локальная переменная
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(92): warning C4101: k: неиспользованная локальная переменная
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(203): warning C4101: k: неиспользованная локальная переменная
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(274): warning C4244: =: преобразование "double" в "int", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(283): warning C4244: =: преобразование "double" в "_Ty", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(43): warning C4244: return: преобразование "double" в "int", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(119): warning C4101: k: неиспользованная локальная переменная
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(135): warning C4101: k: неиспользованная локальная переменная
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(249): warning C4101: k: неиспользованная локальная переменная
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(368): warning C4244: =: преобразование "double" в "int", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(377): warning C4244: =: преобразование "double" в "_Ty", возможна потеря данных
           with
           [
               _Ty=float
           ]
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(284): warning C4244: =: преобразование "double" в "_Ty", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(378): warning C4244: =: преобразование "double" в "_Ty", возможна потеря данных
           with
           [
               _Ty=float
           ]
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(290): warning C4244: =: преобразование "double" в "float", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(291): warning C4244: =: преобразование "double" в "float", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(310): warning C4101: k: неиспользованная локальная переменная
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(331): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(354): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(372): warning C4244: =: преобразование "double" в "int", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(386): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(413): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(367): warning C4101: int_x: неиспользованная локальная переменная
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(367): warning C4101: int_y: неиспользованная локальная переменная
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(366): warning C4101: j: неиспользованная локальная переменная
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(469): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(470): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(471): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(473): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(474): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(475): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(495): warning C4244: =: преобразование "double" в "int", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(496): warning C4244: =: преобразование "double" в "int", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(510): warning C4244: =: преобразование "double" в "sf::Uint8", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(511): warning C4244: =: преобразование "double" в "sf::Uint8", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(512): warning C4244: =: преобразование "double" в "sf::Uint8", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(451): warning C4101: distance_for_floor: неиспользованная локальная переменная
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(450): warning C4101: k: неиспользованная локальная переменная
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(451): warning C4101: i4: неиспользованная локальная переменная
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(551): warning C4244: =: преобразование "double" в "int", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(552): warning C4244: =: преобразование "double" в "int", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(563): warning C4244: =: преобразование "double" в "int", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(564): warning C4244: =: преобразование "double" в "int", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(577): warning C4244: =: преобразование "double" в "int", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(578): warning C4244: =: преобразование "double" в "int", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(596): warning C4244: =: преобразование "double" в "int", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(597): warning C4244: =: преобразование "double" в "int", возможна потеря данных
-c:\users\foton\source\repos\fotondoom_cpp_win32\main.cpp(154): warning C4244: аргумент: преобразование "double" в "T", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(384): warning C4244: =: преобразование "double" в "float", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(385): warning C4244: =: преобразование "double" в "float", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(431): warning C4101: k: неиспользованная локальная переменная
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(452): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(475): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(493): warning C4244: =: преобразование "double" в "int", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(510): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(547): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(488): warning C4101: int_x: неиспользованная локальная переменная
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(488): warning C4101: int_y: неиспользованная локальная переменная
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(487): warning C4101: j: неиспользованная локальная переменная
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(631): warning C4244: аргумент: преобразование "_Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(632): warning C4244: аргумент: преобразование "_Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(633): warning C4244: аргумент: преобразование "_Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(633): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(633): warning C4244: аргумент: преобразование "const _Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(634): warning C4244: аргумент: преобразование "_Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(634): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(634): warning C4244: аргумент: преобразование "const _Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(635): warning C4244: аргумент: преобразование "_Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(635): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(635): warning C4244: аргумент: преобразование "const _Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(638): warning C4244: аргумент: преобразование "_Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(638): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(638): warning C4244: аргумент: преобразование "const _Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(639): warning C4244: аргумент: преобразование "_Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(639): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(639): warning C4244: аргумент: преобразование "const _Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(640): warning C4244: аргумент: преобразование "_Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(640): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(640): warning C4244: аргумент: преобразование "const _Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(646): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(647): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(648): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(658): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(659): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(660): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(696): warning C4244: аргумент: преобразование "_Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(700): warning C4244: аргумент: преобразование "_Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(702): warning C4244: аргумент: преобразование "_Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(702): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(702): warning C4244: аргумент: преобразование "const _Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(703): warning C4244: аргумент: преобразование "_Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(703): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(703): warning C4244: аргумент: преобразование "const _Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(704): warning C4244: аргумент: преобразование "_Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(704): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(704): warning C4244: аргумент: преобразование "const _Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(707): warning C4244: аргумент: преобразование "_Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(708): warning C4244: аргумент: преобразование "_Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(708): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(708): warning C4244: аргумент: преобразование "const _Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(709): warning C4244: аргумент: преобразование "_Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(709): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(709): warning C4244: аргумент: преобразование "const _Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(710): warning C4244: аргумент: преобразование "_Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(710): warning C4244: аргумент: преобразование "double" в "const unsigned __int64", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(710): warning C4244: аргумент: преобразование "const _Ty" в "const unsigned __int64", возможна потеря данных
+          with
+          [
+              _Ty=double
+          ]
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(732): warning C4244: =: преобразование "double" в "int", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(733): warning C4244: =: преобразование "double" в "int", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(749): warning C4244: =: преобразование "double" в "sf::Uint8", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(750): warning C4244: =: преобразование "double" в "sf::Uint8", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(751): warning C4244: =: преобразование "double" в "sf::Uint8", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(585): warning C4101: distance_for_floor: неиспользованная локальная переменная
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(584): warning C4101: k: неиспользованная локальная переменная
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(585): warning C4101: i4: неиспользованная локальная переменная
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(808): warning C4244: =: преобразование "double" в "int", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(809): warning C4244: =: преобразование "double" в "int", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(820): warning C4244: =: преобразование "double" в "int", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(821): warning C4244: =: преобразование "double" в "int", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(834): warning C4244: =: преобразование "double" в "int", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(835): warning C4244: =: преобразование "double" в "int", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(853): warning C4244: =: преобразование "double" в "int", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\engine.h(854): warning C4244: =: преобразование "double" в "int", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\main.cpp(162): warning C4244: аргумент: преобразование "double" в "T", возможна потеря данных
           with
           [
               T=int
           ]
-c:\users\foton\source\repos\fotondoom_cpp_win32\main.cpp(189): warning C4244: аргумент: преобразование "double" в "T", возможна потеря данных
+c:\users\foton\source\repos\fotondoom_cpp_win32\main.cpp(197): warning C4244: аргумент: преобразование "double" в "T", возможна потеря данных
           with
           [
               T=int
           ]
 c:\users\foton\source\repos\fotondoom_cpp_win32\main.cpp(24): warning C4101: str_len: неиспользованная локальная переменная
-c:\users\foton\source\repos\fotondoom_cpp_win32\main.cpp(129): warning C4101: k: неиспользованная локальная переменная
-c:\users\foton\source\repos\fotondoom_cpp_win32\main.cpp(129): warning C4101: j: неиспользованная локальная переменная
-c:\users\foton\source\repos\fotondoom_cpp_win32\main.cpp(129): warning C4101: i: неиспользованная локальная переменная
+c:\users\foton\source\repos\fotondoom_cpp_win32\main.cpp(137): warning C4101: k: неиспользованная локальная переменная
+c:\users\foton\source\repos\fotondoom_cpp_win32\main.cpp(137): warning C4101: j: неиспользованная локальная переменная
+c:\users\foton\source\repos\fotondoom_cpp_win32\main.cpp(137): warning C4101: i: неиспользованная локальная переменная
   Создание кода
-  0 of 1279 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+  1 of 1555 functions (<0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+    1 functions had inline decision re-evaluated but remain unchanged
   Создание кода завершено
   FotonDOOM_cpp_win32.vcxproj -> C:\Users\foton\source\repos\FotonDOOM_cpp_win32\x64\Release Static\FotonDOOM_cpp_win32.exe
