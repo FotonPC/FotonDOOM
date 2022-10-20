@@ -1,3 +1,12 @@
+//  FotonPC's school projects
+//  october 2022
+//
+//
+
+
+
+
+
 #include <SFML\\Graphics.hpp>
 #include "engine.h"
 #include <vector>
@@ -84,6 +93,7 @@ int main()
     int n_r_sp = 2;
     int n_f_sp = 2;
     int n_clls = 1;
+
     
     Engine3D engine;
     engine.init(1.5, 1.5, 90, "resources\\images\\bg2_" + std::to_string(ry) + ".png", ray_step_koef, rx, ry, n_r_sp, n_f_sp, n_clls);
