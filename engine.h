@@ -1,3 +1,10 @@
+
+// Unimaginable engine
+
+// Unimaginable Engine
+// FotonEngine
+
+
 #ifndef DEF
 #define DEF
 
@@ -83,6 +90,27 @@ Point* getIntersectionPoint(LineSegment line1, LineSegment line2)
 
 	return NULL;
 }
+class UnvisibleRectSprite3D {
+public:
+	double x, y;
+	double x_size;
+	double y_size;
+	long long id;
+	void init(double x_, double y_, double x_size_, double y_size_, long long id_) {
+		id = id_;
+		x = x_;
+		y = y_;
+		x_size = x_size_;
+		y_size = y_size_;
+		//_engine = ENGINE;
+	}
+	bool is_collision(double x_, double y_) {
+		if (abs(x - x_) <= x_size / 2 && abs(y - y_) <= y_size / 2) {
+			return true;
+		}
+		else return false;
+	}
+};
 
 class RectSprite3D {
 public:
@@ -307,11 +335,12 @@ public:
 	vector<vector<vector<vector<float>>>> floor_ceil_pre_counted_values;
 	vector<RectSprite3D> sprites_objects;
 	vector<FlatSprite3D> flat_sprites;
+	vector<UnvisibleRectSprite3D> unv_rect_collision;
 	float* floor_ceil_pcv_arr;
 	thread* threads_;
 	int d_angle;
 	int threads_num;
-	int integer_x, integer_y, page, map_width, map_height, n_of_objects, n_flat_sprites;
+	int integer_x, integer_y, page, map_width, map_height, n_of_objects, n_flat_sprites, n_colliders;
 	
 	
 	sf::Uint8* bg_main;
@@ -323,17 +352,19 @@ public:
 	sf::Uint8* pixels;
 
 
-	void init(double x_, double y_, double angle_, string bg_main_filename, double ray_step_k, int rx_, int ry_, int n_of_objects_, int n_flat_sprites_) {
+	void init(double x_, double y_, double angle_, string bg_main_filename, double ray_step_k, int rx_, int ry_, int n_of_objects_, int n_flat_sprites_, int n_colliders_) {
 		RESOLUTION_X = rx_;
 		RESOLUTION_Y = ry_;
 		index_global = 0;
 		rx = rx_;
 		ry = ry_;
+		n_colliders = n_colliders_;
 		n_of_objects = n_of_objects_;
 		threads_num = 8;
 		threads_ = new thread[threads_num];
 		floor_ceil_pcv_arr = new float[180 * rx * ry * 2];
 		sprites_objects.resize(n_of_objects);
+		unv_rect_collision.resize(n_colliders);
 		n_flat_sprites = n_flat_sprites_;
 		//floor_ceil_pre_counted_values.resize(360, vector<vector<vector<float>>>( rx, vector<vector<float>>(ry/2, vector<float>(2, 0))));
 		//render_matrix = render_matrix(360, vector<vector<int>>(rx, vector<int>(2)));
@@ -421,6 +452,11 @@ public:
 	void add_flat_sprite(FlatSprite3D sprite, int index_) {
 		flat_sprites[index_] = sprite;
 	}
+	void add_collider(UnvisibleRectSprite3D sprite, int index_) {
+		unv_rect_collision[index_] = sprite;
+	}
+
+
 	void load_texture(int texture_code, string filename) {
 		sf::Image texture_img;
 		texture_img.loadFromFile(filename);
@@ -733,7 +769,7 @@ public:
 						aryf = abs(ry * oy_f);
 						//cout << arxf << endl;
 						if (dy_f > 9) {
-							up_code = 4;
+							up_code = 16;
 						}
 						else {
 							up_code = 11;
@@ -801,25 +837,55 @@ public:
 	}
 
 	void step_left(double step) {
+		bool coll;
+		int i;
 		x_past = x;
 		y_past = y;
 		x -= sin(radians(angle)) * step;
 		y += cos(radians(angle)) * step;
 		integer_x = trunc(x);
 		integer_y = trunc(y);
-		if (map[integer_x][integer_y] > 0) {
+		coll = map[integer_x][integer_y] > 0;
+		for (i = 0; i < n_of_objects; i++) {
+			if (sprites_objects[i].is_collision(x, y)) {
+				coll = true;
+				break;
+			}
+		}
+		for (i = 0; i < n_colliders; i++) {
+			if (unv_rect_collision[i].is_collision(x, y)) {
+				coll = true;
+				break;
+			}
+		}
+		if (coll) {
 			x = x_past;
 			y = y_past;
 		}
 	}
 	void step_right(double step) {
+		bool coll;
+		int i;
 		x_past = x;
 		y_past = y;
 		x += sin(radians(angle)) * step;
 		y -= cos(radians(angle)) * step;
 		integer_x = trunc(x);
 		integer_y = trunc(y);
-		if (map[integer_x][integer_y] > 0) {
+		coll = map[integer_x][integer_y] > 0;
+		for (i = 0; i < n_of_objects; i++) {
+			if (sprites_objects[i].is_collision(x, y)) {
+				coll = true;
+				break;
+			}
+		}
+		for (i = 0; i < n_colliders; i++) {
+			if (unv_rect_collision[i].is_collision(x, y)) {
+				coll = true;
+				break;
+			}
+		}
+		if (coll) {
 			x = x_past;
 			y = y_past;
 		}
@@ -840,19 +906,40 @@ public:
 				break;
 			}
 		}
+		for (i = 0; i < n_colliders; i++) {
+			if (unv_rect_collision[i].is_collision(x, y)) {
+				coll = true;
+				break;
+			}
+		}
 		if (coll) {
 			x = x_past;
 			y = y_past;
 		}
 	}
 	void step_backward(double step) {
+		bool coll;
+		int i;
 		x_past = x;
 		y_past = y;
 		x -= cos(radians(angle)) * step;
 		y -= sin(radians(angle)) * step;
 		integer_x = trunc(x);
 		integer_y = trunc(y);
-		if (map[integer_x][integer_y] > 0) {
+		coll = map[integer_x][integer_y] > 0;
+		for (i = 0; i < n_of_objects; i++) {
+			if (sprites_objects[i].is_collision(x, y)) {
+				coll = true;
+				break;
+			}
+		}
+		for (i = 0; i < n_colliders; i++) {
+			if (unv_rect_collision[i].is_collision(x, y)) {
+				coll = true;
+				break;
+			}
+		}
+		if (coll) {
 			x = x_past;
 			y = y_past;
 		}

@@ -80,9 +80,13 @@ int main()
     real_height = ry;
     
     sf::RenderWindow window(sf::VideoMode(RESOLUTION_X, RESOLUTION_Y), "FotonDOOM on C++");
+
+    int n_r_sp = 2;
+    int n_f_sp = 2;
+    int n_clls = 1;
     
     Engine3D engine;
-    engine.init(1.5, 1.5, 90, "resources\\images\\bg2_" + std::to_string(ry) + ".png", ray_step_koef, rx, ry, 2,2);
+    engine.init(1.5, 1.5, 90, "resources\\images\\bg2_" + std::to_string(ry) + ".png", ray_step_koef, rx, ry, n_r_sp, n_f_sp, n_clls);
     RectSprite3D a;
     //RectSprite3D a;
     a.init(4.75,  9, 0.1, 0.5, ry, ry, ry, 0, 13, 12, 14);
@@ -90,14 +94,13 @@ int main()
     RectSprite3D b;
     //RectSprite3D a;
     b.init(4.25, 9, 0.5, 0.2, ry, ry, ry, 1, 2, 4, 4);
-    FlatSprite3D c;
-    c.init(1.5, 1.5, 1, 1, 0, ry, ry);
-    c.load_texture(0, "resources\\images\\star512.png");
-    engine.add_flat_sprite(c, 0);
     FlatSprite3D d;
-    d.init(1.5, 2.5, 0, 1, 1, ry, ry);
+    d.init(1.5, 2.5, 0, 1, 0, ry, ry);
     d.load_texture(1, "resources\\images\\bed512.png");
-    engine.add_flat_sprite(d, 1);
+    UnvisibleRectSprite3D e;
+    e.init(1.25, 2.5, 0.5, 1, 0);
+    engine.add_collider(e, 0);
+    engine.add_flat_sprite(d, 0);
     engine.add_rect_sprite(b, 1);
     engine.set_map("resources\\maps\\flat1.map");
     engine.load_texture(0, "resources\\images\\textures\\parquet"+ std::to_string(ry)+".png");
@@ -111,6 +114,7 @@ int main()
     engine.load_texture(14, "resources\\images\\sprites\\door_1\\1_2_" + std::to_string(ry) + ".png");
     engine.load_texture(4, "resources\\images\\textures\\shukat_" + std::to_string(ry) + ".png");
     engine.load_texture(9, "resources\\images\\textures\\lift_" + std::to_string(ry) + ".png");
+    engine.load_texture(16, "resources\\images\\textures\\shukat_lamp_" + std::to_string(ry) + ".png");
     //engine.load_texture(4, "resources\\images\\textures\\stone_old" + std::to_string(ry) + ".png");
     //engine.load_texture(5, "resources\\images\\textures\\door" + std::to_string(ry) + ".png");
     //engine.load_texture(10, "resources\\images\\textures\\fog" + std::to_string(ry) + ".png");
