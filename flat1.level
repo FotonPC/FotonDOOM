@@ -1,0 +1,35 @@
+sprites:
+	rect:
+		n 1
+		4.75 9 0.1 0.5 ry ry ry 0 13 12 14
+	flat:
+		n 6
+		1.5 2.5 0 1 0 ry ry resources\images\bed{ry}.png
+		1.25 2.5 0 1 0 ry ry resources\images\bed{ry}.png
+		1.13 2.5 0 1 0 ry ry resources\images\bed{ry}.png
+		1.35 2.5 0 1 0 ry ry resources\images\bed{ry}.png
+		1.2 2.5 0 1 0 ry ry resources\images\bed{ry}.png
+		1.05 2.5 0 1 0 ry ry resources\images\bed{ry}.png
+	collider:
+		n 1
+		1.25 2.5 0.5 1 0
+map:
+	map resources\maps\flat1.map
+	0 0
+	1 1
+	2 2
+	3 3
+	4 4
+	5 5
+	6 6
+	7 7
+	8 8
+	9 9
+floor:
+	floor flat1.floor
+	1 0
+	2 15
+ceil:
+	ceil flat1.ceil
+	2 16
+	1 11

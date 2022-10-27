@@ -4,7 +4,6 @@
 // Unimaginable Engine
 // FotonEngine
 
-
 #ifndef DEF
 #define DEF
 
@@ -14,6 +13,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <cstring>
 //#include <omp.h>
 #include <time.h> 
@@ -21,16 +21,48 @@
 //#include <amp.h>
 #include <thread>
 #include "sprites.h"
+#include <ostream>
 #include <algorithm>
+#include <regex>
+
+
+
 
 using namespace std;
 //using namespace concurrency;
+
+const bool True = true;
+const bool False = false;
 
 int index_global;
 
 bool comp_fs(vector<double> a, vector<double> b) {
 	return a[1] < b[1];
 }
+
+void replaceAll(string& s, const string& search, const string& replace) {
+	for (size_t pos = 0; ; pos += replace.length()) {
+		// Locate the substring to replace
+		pos = s.find(search, pos);
+		if (pos == string::npos) break;
+		// Replace by erasing and inserting
+		s.erase(pos, search.length());
+		s.insert(pos, replace);
+	}
+}
+
+void tokenize(std::string const& str, const char delim,
+	std::vector<std::string>& out)
+{
+	// строим поток из строки
+	std::stringstream ss(str);
+
+	std::string s;
+	while (std::getline(ss, s, delim)) {
+		out.push_back(s);
+	}
+}
+
 
 struct OZ_Code_struct {
 	double oz;
@@ -54,42 +86,6 @@ int sfUint8_to_int(sf::Uint8 uint8_num) {
 	return uint8_num * 1;
 }
 
-class Point
-{
-public:
-	float x, y;
-}; 
-class LineSegment
-{
-public:
-	Point top;
-	Point bottom;
-};
-
-Point* getIntersectionPoint(LineSegment line1, LineSegment line2)
-{
-	float s1_x, s1_y, s2_x, s2_y;
-	float p1_x = line1.bottom.x, p1_y = line1.bottom.y;
-	float p0_x = line1.top.x, p0_y = line1.top.y;
-	float p3_x = line2.bottom.x, p3_y = line2.bottom.y;
-	float p2_x = line2.top.x, p2_y = line2.top.y;
-	s1_x = p1_x - p0_x;     s1_y = p1_y - p0_y;
-	s2_x = p3_x - p2_x;     s2_y = p3_y - p2_y;
-
-	float s, t;
-	s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / (-s2_x * s1_y + s1_x * s2_y);
-	t = (s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / (-s2_x * s1_y + s1_x * s2_y);
-
-	if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
-	{
-		Point* intsPoint = (Point*)malloc(sizeof(Point));
-		intsPoint->x = p0_x + (t * s1_x);
-		intsPoint->y = p0_y + (t * s1_y);
-		return intsPoint;
-	}
-
-	return NULL;
-}
 class UnvisibleRectSprite3D {
 public:
 	double x, y;
@@ -325,9 +321,12 @@ class Engine3D {
 public:
 	int rx, ry, RESOLUTION_X, RESOLUTION_Y;
 	double x, y, angle;
+	map<char, int> floor_dir;
+	map<char, int> ceil_dir;
+	map<char, int> map_dir;
 	vector<vector<vector<char>>> render_matrix;
 	vector<vector<vector<float>>> rays_steps;
-	vector<vector<int>> map;
+	vector<vector<int>> mAp, mAp_floor, mAp_ceil;
 	vector<vector<vector<double>>> sprites_flat_heights;
 	vector<vector<vector<double>>> sorted_i_sf;
 	vector<vector<vector<vector<char>>>> textures;
@@ -422,31 +421,8 @@ public:
 		//cout << rays_steps[0][0][0] << endl;
 
 	}
-	/*void sort_fs_by_H(int ind) {
-		int i, j, k, ij, id_max;
-		bool in_s;
-		double h_max;
-		for (i = 0; i < n_flat_sprites; i++) {
-			sorted_i_sf[i] = -1;
-		}
-		for (i = 0; i < n_flat_sprites; i++) {
-			id_max = 0;
-			h_max = 0;
-			for (j = 0; j < n_flat_sprites; j++) {
-				in_s = false;
-				for (k)
-				if (not j in sorted_i_sf) {
-					if (sprites_flat_heights[j][ind][2] > h_max) {
-						h_max = sprites_flat_heights[j][ind][2];
-						id_max = j;
-					}
-				}
-			}
-			sorted_i_sf[n_flat_sprites - ij] = id_max;
-			ij += 1;
-		}
-	}*/
 	void add_rect_sprite(RectSprite3D sprite, int index_) {
+		//cout << sprites_objects.size() << endl;
 		sprites_objects[index_] = sprite;
 	}
 	void add_flat_sprite(FlatSprite3D sprite, int index_) {
@@ -490,7 +466,7 @@ public:
 			}
 		}
 		in.close();
-		map.resize(k, vector<int>(str_len, 0));
+		mAp.resize(k, vector<int>(str_len, 0));
 		int k2;
 		k2 = k;
 		cout << "width: " << str_len << " height: " << k << endl;
@@ -505,7 +481,91 @@ public:
 			{
 				for (i = 0; i < str_len; i++) {
 					//cout << line[i] << " " << static_cast<int>(line[i]) - 48 << endl;
-					map[k][i] = static_cast<int>(line[i]) - 48;
+					mAp[k][i] = map_dir[line[i]];
+					//cout << map[k][i];
+				}
+				str_len = line.length();
+				k++;
+			}
+		}
+		in2.close();
+		cout << "File with MAP is loaded 3" << endl;
+
+
+	}
+	void set_map_floor(string filename) {
+		std::string line;
+		std::ifstream in(filename);
+		int str_len, i, k;
+		k = 0;
+		if (in.is_open())
+		{
+			cout << "File with MAP is loaded" << endl;
+			while (getline(in, line))
+			{
+				str_len = line.length();
+				k++;
+			}
+		}
+		in.close();
+		mAp_floor.resize(k, vector<int>(str_len, 0));
+		int k2;
+		k2 = k;
+		cout << "width: " << str_len << " height: " << k << endl;
+		map_width = str_len;
+		map_height = k;
+		std::ifstream in2(filename);
+		k = 0;
+		if (in2.is_open())
+		{
+			cout << "Loaded floor 2" << endl;
+			while (getline(in2, line))
+			{
+				for (i = 0; i < str_len; i++) {
+					//cout << line[i] << " " << static_cast<int>(line[i]) - 48 << endl;
+					mAp_floor[k][i] = floor_dir[line[i]];
+					//cout << map[k][i];
+				}
+				str_len = line.length();
+				k++;
+			}
+		}
+		in2.close();
+		cout << "Loaded floor 3" << endl;
+
+
+	}
+	void set_map_ceil(string filename) {
+		std::string line;
+		std::ifstream in(filename);
+		int str_len, i, k;
+		k = 0;
+		if (in.is_open())
+		{
+			cout << "File with MAP is loaded" << endl;
+			while (getline(in, line))
+			{
+				str_len = line.length();
+				k++;
+			}
+		}
+		in.close();
+		mAp_ceil.resize(k, vector<int>(str_len, 0));
+		int k2;
+		k2 = k;
+		cout << "width: " << str_len << " height: " << k << endl;
+		map_width = str_len;
+		map_height = k;
+		std::ifstream in2(filename);
+		k = 0;
+		if (in2.is_open())
+		{
+			cout << "File with MAP is loaded 2" << endl;
+			while (getline(in2, line))
+			{
+				for (i = 0; i < str_len; i++) {
+					//cout << line[i] << " " << static_cast<int>(line[i]) - 48 << endl;
+					mAp_ceil[k][i] = static_cast<int>(ceil_dir[line[i]]);
 					//cout << map[k][i];
 				}
 				str_len = line.length();
@@ -543,7 +603,7 @@ public:
 			}
 			//cout << x << " " << y << ":" << map[0][2] << " " << int_x <<  " " << int_y << endl;
 			sprite_is = false;
-			while ((map[current_x][current_y] == 0) and (k < 10 / ray_step)) { // Проверка не врезалось ли
+			while ((mAp[current_x][current_y] == 0) and (k < 10 / ray_step)) { // Проверка не врезалось ли
 				current_x += x_step; // делаем шаг x
 				current_y += y_step; // делаем шаг y
 				//int_x = trunc(current_x); // приводим к целому чтобы был индекс массива
@@ -580,7 +640,7 @@ public:
 			heights[i][0] = abs((1 / (sqrt(dx * dx + dy * dy) * cos(radians(to_double(i) / to_double(rx) * 90.0 - 45.0)))) * ry / 2.0); // высота
 			//cout << heights[i][0] << endl;
 			if (not sprite_is) {
-				code = map[current_x][current_y]; // код текстуры
+				code = mAp[current_x][current_y]; // код текстуры
 				if (k >= 10 / ray_step) {
 					code = 10;
 				}
@@ -768,18 +828,8 @@ public:
 						arxf = abs(ry * ox_f);
 						aryf = abs(ry * oy_f);
 						//cout << arxf << endl;
-						if (dy_f > 9) {
-							up_code = 16;
-						}
-						else {
-							up_code = 11;
-						}
-						if (dy_f > 9) {
-							down_code = 15;
-						}
-						else {
-							down_code = 0;
-						}
+						up_code = mAp_ceil[dx_f][dy_f];
+						down_code = mAp_floor[dx_f][dx_f];
 
 						if (pix0_s == 0 && pix1_s == 0 && pix2_s == 0) {
 							pixels[j * rx * 4 + i * 4] = textures[up_code][arxf][aryf][0] * 0.95;
@@ -845,7 +895,7 @@ public:
 		y += cos(radians(angle)) * step;
 		integer_x = trunc(x);
 		integer_y = trunc(y);
-		coll = map[integer_x][integer_y] > 0;
+		coll = mAp[integer_x][integer_y] > 0;
 		for (i = 0; i < n_of_objects; i++) {
 			if (sprites_objects[i].is_collision(x, y)) {
 				coll = true;
@@ -872,7 +922,7 @@ public:
 		y -= cos(radians(angle)) * step;
 		integer_x = trunc(x);
 		integer_y = trunc(y);
-		coll = map[integer_x][integer_y] > 0;
+		coll = mAp[integer_x][integer_y] > 0;
 		for (i = 0; i < n_of_objects; i++) {
 			if (sprites_objects[i].is_collision(x, y)) {
 				coll = true;
@@ -899,7 +949,7 @@ public:
 		y += sin(radians(angle)) * step;
 		integer_x = trunc(x);
 		integer_y = trunc(y);
-		coll = map[integer_x][integer_y] > 0;
+		coll = mAp[integer_x][integer_y] > 0;
 		for (i = 0; i < n_of_objects; i++) {
 			if (sprites_objects[i].is_collision(x, y)) {
 				coll = true;
@@ -926,7 +976,7 @@ public:
 		y -= sin(radians(angle)) * step;
 		integer_x = trunc(x);
 		integer_y = trunc(y);
-		coll = map[integer_x][integer_y] > 0;
+		coll = mAp[integer_x][integer_y] > 0;
 		for (i = 0; i < n_of_objects; i++) {
 			if (sprites_objects[i].is_collision(x, y)) {
 				coll = true;
@@ -944,6 +994,233 @@ public:
 			y = y_past;
 		}
 	}
+	void load_level(string filename) {
+		
+		std::string s = "scott>=tiger>=mushroom";
+		std::string delimiter = " ";
+		string map_filename, floor_filename, ceil_filename;
+		size_t pos = 0;
+		std::string token;
+		vector<string> lines, tokens;
+		std::string line;
+		std::ifstream in(filename);
+		RectSprite3D rect_sp;
+		FlatSprite3D flat_sp;
+		UnvisibleRectSprite3D coll_sp;
+		int i, k, fs, rs, cs;
+		fs = 0;
+		rs = 0;
+		cs = 0;
+		k = 0;
+		int CRNT = 0;
+		int MAP = 1;
+		int SPR = 0;
+		int FLR = 2;
+		int CEIL = 3;
+		int FLT = 4;
+		int RCT = 5;
+		int CLD = 6;
+		bool is_map, is_ceil, is_floor;
+		sprites_objects.resize(n_of_objects);
+		if (in.is_open())
+		{
+			cout << "File with MAP is loaded" << endl;
+			while (getline(in, line))
+			{
+				line.erase(std::remove(line.begin(), line.end(), '\t'), line.end());
+				lines.push_back(line);
+				
+			}
+		}
+		for (k = 0; k < lines.size(); k++) {
+			if (lines[k] == "sprites:") {
+				CRNT = SPR;
+				is_floor = false;
+				is_map = false;
+				is_ceil = false;
+			}
+			else if (lines[k] == "rect:") {
+				CRNT = RCT;
+				is_floor = false;
+				is_map = false;
+				is_ceil = false;
+			}
+			else if (lines[k] == "flat:") {
+				CRNT = FLT;
+				is_floor = false;
+				is_map = false;
+				is_ceil = false;
+			}
+			else if (lines[k] == "collider:") {
+				CRNT = CLD;
+				is_floor = false;
+				is_map = false;
+				is_ceil = false;
+			}
+			else if (lines[k] == "map:") {
+				CRNT = MAP;
+				is_floor = false;
+				is_ceil = false;
+			}
+			else if (lines[k] == "floor:") {
+				CRNT = FLR;
+				is_map = false;
+				is_ceil = false;
+			}
+			else if (lines[k] == "ceil:") {
+				CRNT = CEIL;
+				is_floor = false;
+				is_map = false;
+			}
+			else {
+				tokens.resize(0);
+				line = lines[k];
+				const char delim = ' ';
+				tokenize(line, delim, tokens);
+				if (CRNT == MAP) {
+					if (tokens[0] == "map") {
+						map_filename = tokens[1];
+					}
+					else {
+						map_dir[tokens[0][0]] = atoi(tokens[1].c_str());
+					}
+				}
+				if (CRNT == CEIL) {
+					if (tokens[0] == "ceil") {
+						ceil_filename = tokens[1];
+					}
+					else {
+						ceil_dir[tokens[0][0]] = atoi(tokens[1].c_str());
+					}
+				}
+				if (CRNT == FLR) {
+					if (tokens[0] == "floor") {
+						floor_filename = tokens[1];
+					}
+					else {
+						floor_dir[tokens[0][0]] = atoi(tokens[1].c_str());
+					}
+				}
+				if (CRNT == RCT) {
+					
+					if (tokens[0] == "n") {
+						n_of_objects = atoi(tokens[1].c_str());
+						sprites_objects.resize(n_of_objects);
+					}
+					else {
+						for (i = 0; i < tokens.size(); i++) {
+							if (tokens[i] == "ry") {
+								tokens[i] = to_string(ry);
+							}
+							if (tokens[i] == "rx") {
+								tokens[i] = to_string(rx);
+							}
+							
+						}
+						rect_sp = RectSprite3D();
+						rect_sp.init(
+							atof(tokens[0].c_str()), // x
+							atof(tokens[1].c_str()), // y
+							atof(tokens[2].c_str()), // x size
+							atof(tokens[3].c_str()), // y size
+							atoi(tokens[4].c_str()), // res x texture
+							atoi(tokens[5].c_str()), // res y texture
+							atoi(tokens[6].c_str()), // ry
+							atoll(tokens[7].c_str()), // id
+							atoi(tokens[8].c_str()), // tc1
+							atoi(tokens[9].c_str()), // tc1
+							atoi(tokens[10].c_str()) // tc1
+						);
+						add_rect_sprite(rect_sp, rs);
+						rs += 1;
+						cout << "gg1" << endl;
+					}
+
+
+				}
+				if (CRNT == FLT) {
+					if (tokens[0] == "n") {
+						n_flat_sprites = atoi(tokens[1].c_str());
+						flat_sprites.resize(n_of_objects);
+						sprites_flat_heights.resize(n_flat_sprites, vector<vector<double>>(rx, vector<double>(10, 0)));
+						int gg, g;
+						sorted_i_sf.resize(rx, vector<vector<double>>(n_flat_sprites, vector<double>(2, 0)));
+						for (g = 0; g < rx; g++) {
+							for (gg = 0; gg < n_flat_sprites; gg++) {
+								sorted_i_sf[g][gg][0] = 0;
+								sorted_i_sf[g][gg][1] = 0;
+							}
+						}
+						cout << "<<<<<<<<" << n_flat_sprites << ">>>>>>>" << endl;
+					}
+					else {
+						for (i = 0; i < tokens.size(); i++) {
+							if (tokens[i] == "ry") {
+								tokens[i] = to_string(ry);
+							}
+							if (tokens[i] == "rx") {
+								tokens[i] = to_string(rx);
+							}
+							
+						}
+						flat_sp = FlatSprite3D();
+						flat_sp.init(
+							atof(tokens[0].c_str()), // x
+							atof(tokens[1].c_str()), // y
+							atoi(tokens[2].c_str()), // x size
+							atof(tokens[3].c_str()), // y size
+							atol(tokens[4].c_str()), // res x texture
+							atoi(tokens[5].c_str()), // res y texture
+							atoi(tokens[6].c_str()) // ry
+						);
+						
+						replaceAll(tokens[7], "{ry}", to_string(ry));
+						cout << tokens[7] << endl;
+						cout << fs << endl;
+						flat_sp.load_texture(0, tokens[7]);
+						add_flat_sprite(flat_sp, fs);
+						fs += 1;
+					}
+
+
+				}
+				if (CRNT == CLD) {
+					if (tokens[0] == "n") {
+						n_colliders = atoi(tokens[1].c_str());
+						unv_rect_collision.resize(n_of_objects);
+					}
+					else {
+						for (i = 0; i < tokens.size(); i++) {
+							if (tokens[i] == "ry") {
+								tokens[i] = to_string(ry);
+							}
+							if (tokens[i] == "rx") {
+								tokens[i] = to_string(rx);
+							}
+
+						}
+						coll_sp = UnvisibleRectSprite3D();
+						coll_sp.init(
+							atof(tokens[0].c_str()), // x
+							atof(tokens[1].c_str()), // y
+							atof(tokens[2].c_str()), // x size
+							atof(tokens[3].c_str()), // y size
+							atol(tokens[4].c_str()) // res x texture
+						);
+						add_collider(coll_sp, cs);
+						cs += 1;
+					}
+
+
+				}
+			}
+			cout << lines[k] << endl;
+		}
+		set_map(map_filename);
+		set_map_floor(floor_filename);
+		set_map_ceil(ceil_filename);
+		in.close();
+	}
 
 };
 
@@ -956,10 +1233,5 @@ public:
 	//		}
 	//	}
 	//}
-
-
-
-
-
 
 #endif
