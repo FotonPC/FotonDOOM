@@ -1,18 +1,27 @@
 sprites:
 	rect:
-		n 1
+		n 2
 		4.75 9 0.1 0.5 ry ry ry 0 13 12 14
+		4.25 9 0.5 0.1 ry ry ry 1 2 4 4
 	flat:
-		n 6
-		1.5 2.5 0 1 0 ry ry resources\images\bed{ry}.png
-		1.25 2.5 0 1 0 ry ry resources\images\bed{ry}.png
-		1.13 2.5 0 1 0 ry ry resources\images\bed{ry}.png
-		1.35 2.5 0 1 0 ry ry resources\images\bed{ry}.png
-		1.2 2.5 0 1 0 ry ry resources\images\bed{ry}.png
-		1.05 2.5 0 1 0 ry ry resources\images\bed{ry}.png
+		n 8
+		1.2 1.5 1.2 2.5 0 ry ry resources\images\bed{ry}.png
+		1.5 4.5 2 4.5 0 ry ry resources\images\textures\zonq{ry}.png
+		1.5 4.5 1.5 5.5 0 ry ry resources\images\textures\zonq{ry}.png
+		2.0 4.5 2.0 5.5 0 ry ry resources\images\textures\zonq{ry}.png
+		1.5 5.5 2 5.5 0 ry ry resources\images\textures\zonq{ry}.png
+		1.5 2.8 1.7 2.8 0 ry ry resources\images\audio_top_512.png
+		1.5 2.8 1.5 3 0 ry ry resources\images\audio_side_512.png
+		1.7 2.8 1.7 3 0 ry ry resources\images\audio_side_512.png
 	collider:
 		n 1
-		1.25 2.5 0.5 1 0
+		1.75 5 0.5 1 0
+	circle:
+		n 4
+		1.5 1.5 0.1 ry 0 ry resources\images\textures\column1_{ry}.png
+		1.5 2.5 0.1 ry 0 ry resources\images\textures\column1_{ry}.png
+		4.5 2.5 0.1 ry 0 ry resources\images\textures\marble512.png
+		4.5 1.5 0.1 ry 0 ry resources\images\textures\marble512.png
 map:
 	map resources\maps\flat1.map
 	0 0
@@ -29,7 +38,9 @@ floor:
 	floor flat1.floor
 	1 0
 	2 15
+	3 3
 ceil:
 	ceil flat1.ceil
 	2 16
 	1 11
+	3 3

@@ -8,6 +8,7 @@
 
 
 #include <SFML\\Graphics.hpp>
+#include <SFML\\Audio.hpp>
 #include "engine.h"
 #include <vector>
 
@@ -91,12 +92,12 @@ int main()
     sf::RenderWindow window(sf::VideoMode(RESOLUTION_X, RESOLUTION_Y), "FotonDOOM on C++");
 
     int n_r_sp = 2;
-    int n_f_sp = 6;
+    int n_f_sp = 8;
     int n_clls = 1;
 
     
     Engine3D engine;
-    engine.init(1.5, 1.5, 90, "resources\\images\\bg2_" + std::to_string(ry) + ".png", ray_step_koef, rx, ry, n_r_sp, n_f_sp, n_clls);
+    engine.init(2, 2, 90, "resources\\images\\bg_menu" + std::to_string(ry) + ".png", ray_step_koef, rx, ry, n_r_sp, n_f_sp, n_clls);
     engine.load_level("flat1.level");
     //engine.set_map("resources\\maps\\flat1.map");
     engine.load_texture(0, "resources\\images\\textures\\parquet"+ std::to_string(ry)+".png");
@@ -127,10 +128,33 @@ int main()
     sf::Uint8* pixels = new sf::Uint8[RESOLUTION_X * RESOLUTION_Y * 4 + 4];
 
     sf::Sprite sprite(texture);
-    window.setFramerateLimit(3000);
+    window.setFramerateLimit(240);
     engine.page = 0;
     sf::Mouse mouse;
     mouse = sf::Mouse();
+    sf::SoundBuffer buffer1;
+    buffer1.loadFromFile("resources\\audio\\parquet.flac");
+    sf::Sound sound1;
+    sound1.setBuffer(buffer1);
+    sound1.setVolume(5);
+    sf::SoundBuffer buffer2;
+    buffer2.loadFromFile("resources\\audio\\door_open.flac");
+    sf::Sound sound2;
+    sound2.setBuffer(buffer2);
+    sound2.setVolume(50);
+    sf::SoundBuffer buffer3;
+    buffer3.loadFromFile("resources\\audio\\door_close.ogg");
+    sf::Sound sound3;
+    sound3.setBuffer(buffer3);
+    sound3.setVolume(50);
+    bool is_step;
+    int step_counter = 0;
+    int door_close_counter = 0;
+    int door_open_counter = 0;
+
+    sf::Music music_butt1;
+    music_butt1.openFromFile("resources\\audio\\butt1.ogg");
+    
 
 
     sf::Clock clock;
@@ -145,6 +169,7 @@ int main()
         {
             if (event.type == sf::Event::Closed)
                 window.close();
+            
             if (event.type == sf::Event::MouseMoved)
             {
                 if (engine.page == 1) {
@@ -171,24 +196,42 @@ int main()
                 real_height = event.size.height;
             }
             if (event.type == sf::Event::KeyPressed) {
+                if (event.key.code == sf::Keyboard::Escape) {
+                    if (engine.page == 0) {
+                        window.close();
+                    }
+                }
                 if (event.key.code == sf::Keyboard::Space) {
                     cout << engine.x << " " << engine.y << endl;
                     double a;
-                    a = engine.sprites_objects[0].x_size;
-                    engine.sprites_objects[0].x_size = engine.sprites_objects[0].y_size;
-                    engine.sprites_objects[0].y_size = a;
-                    engine.sprites_objects[0].orient_x = 1 - engine.sprites_objects[0].orient_x;
-                    
-                    if (engine.sprites_objects[0].y == 9.05) {
-                        engine.sprites_objects[0].y = 9.25;
-                        engine.sprites_objects[0].x = 4.95;
-                    }
-                    else {
-                        engine.sprites_objects[0].y = 9.05;
-                        engine.sprites_objects[0].x = 4.75;
+                    if (door_open_counter > 1.5 * fps && door_close_counter > fps / 2) {
+                        a = engine.sprites_objects[0].x_size;
+                        engine.sprites_objects[0].x_size = engine.sprites_objects[0].y_size;
+                        engine.sprites_objects[0].y_size = a;
+                        engine.sprites_objects[0].orient_x = 1 - engine.sprites_objects[0].orient_x;
+
+                        if (engine.sprites_objects[0].y == 9.05) {
+                            engine.sprites_objects[0].y = 9.25;
+                            engine.sprites_objects[0].x = 4.95;
+                            sound2.play();
+                            door_open_counter = 0;
+                        }
+                        else {
+
+                            engine.sprites_objects[0].y = 9.05;
+                            engine.sprites_objects[0].x = 4.75;
+                            sound3.play();
+                            door_close_counter = 0;
+
+                        }
                     }
                     
                    
+                }
+                if (event.key.code == sf::Keyboard::F) {
+                    if (engine.is_butt_1) {
+                        music_butt1.play();
+                    }
                 }
                 if (event.key.code == sf::Keyboard::Enter) {
                     if (engine.page == 0) {
@@ -221,6 +264,7 @@ int main()
 
         window.clear();
         if (engine.page == 1) {
+            is_step = false;
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
             {
                 // левая стрелка нажата - двигаем нашего персонажа
@@ -235,6 +279,7 @@ int main()
                     engine.angle = to_double(360) + engine.angle;
                 }
                 //cout << sf::Mouse::getPosition(window).x - (int)window.getSize().x / 2 +  8 << endl;
+                
 
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
@@ -256,21 +301,49 @@ int main()
             {
                 // левая стрелка нажата - двигаем нашего персонажа
                 engine.step_left(4/fps);
+
+                if (step_counter > fps / 3.5) {
+                    sound1.stop();
+                    step_counter = 0;
+                    sound1.play();
+                }
+                is_step = true;
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
             {
                 // левая стрелка нажата - двигаем нашего персонажа
                 engine.step_right(4 / fps);
+                if (step_counter > fps / 3.5) {
+                    sound1.stop();
+                    step_counter = 0;
+                    sound1.play();
+                }
+                is_step = true;
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
             {
                 // левая стрелка нажата - двигаем нашего персонажа
                 engine.step_forward(4 / fps);
+                if (step_counter > fps / 3.5) {
+                    sound1.stop();
+                    step_counter = 0;
+                    sound1.play();
+                }
+                is_step = true;
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
             {
                 // левая стрелка нажата - двигаем нашего персонажа
                 engine.step_backward(4 / fps);
+                if (step_counter > fps / 3.5) {
+                    sound1.stop();
+                    step_counter = 0;
+                    sound1.play();
+                }
+                is_step = true;
+            }
+            if (not is_step) {
+                step_counter = fps;
             }
             while (engine.angle >= 360) {
                 engine.angle -= 360.0;
@@ -283,6 +356,10 @@ int main()
             end = std::chrono::steady_clock::now();
             elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
             //if (iteration_counter % 30 == 0) { std::cout << "Heights time: " << elapsed_ms.count() << " mcs\n"; }
+            music_butt1.setVolume(1/(sqrt((engine.x-1.6) * (engine.x - 1.6) + (engine.y - 2.9) * (engine.y - 2.9))) * 20);
+            step_counter++;
+            door_open_counter++;
+            door_close_counter++;
         }
         begin = std::chrono::steady_clock::now();
         pixels = engine.stage_render(texture, sprite);
@@ -325,6 +402,7 @@ int main()
         //if (iteration_counter % 30 == 0) { std::cout << "Render time: " << elapsed_ms.count() << " mcs\n"; }
         window.display();
         iteration_counter++;
+        engine.is_butt_1 = (1.5 < engine.x && 2 > engine.x) && (2.5 < engine.y && 3 > engine.y);
     }
 
     return 0;

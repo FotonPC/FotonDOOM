@@ -33,6 +33,7 @@ using namespace std;
 
 const bool True = true;
 const bool False = false;
+const long double PI = 3.1415926535898;
 
 int index_global;
 
@@ -236,8 +237,7 @@ for (i = 0; i < res_x_texture; i++) {
 
 class FlatSprite3D {
 public:
-	double x, y, size;
-	bool orient_x;
+	double x1, y1, x2, y2;
 	long long id;
 	int ry, texture_size_x;
 	vector<vector<vector<char>>> image;
@@ -247,13 +247,13 @@ public:
 	};
 
 
-	void init(double x_, double y_, bool orient_x_, double size_, long long id_, int ry_, int texture_size_x_) {
+	void init(double x1_, double y1_, double x2_, double y2_, long long id_, int ry_, int texture_size_x_) {
 		//void (*get_capture_)(double, double, long long, bool, vector<vector<vector<char>>>&, vector<vector<vector<double>>>&), int ry_, int texture_size_x_) {
 		//get_capture = get_capture_;
-		x = x_;
-		y = y_;
-		orient_x = orient_x_;
-		size = size_;
+		x1 = x1_;
+		x2 = x2_;
+		y1 = y1_;
+		y2 = y2_;
 		id = id_;
 		ry = ry_;
 		texture_size_x = texture_size_x_;
@@ -271,7 +271,7 @@ public:
 
 		pixels1 = texture_img.getPixelsPtr();
 		int i, j, k;
-		for (i = 0; i < ry; i++) {
+		for (i = 0; i < texture_size_x; i++) {
 			for (j = 0; j < ry; j++) {
 				image[i][j][0] = sfUint8_to_int(pixels1[i * ry * 4 + j * 4 - 4]);
 				image[i][j][1] = sfUint8_to_int(pixels1[i * ry * 4 + j * 4 - 3]);
@@ -282,20 +282,7 @@ public:
 
 
 	}
-	bool is_collision(double x1, double y1, double x2, double y2) {
-		double x3, x4, y3, y4;
-		if (orient_x) {
-			x3 = x - size / 2;
-			x4 = x + size / 2;
-			y3 = y - 0.01;
-			y4 = y + 0.01;
-		}
-		else {
-			y3 = y - size / 2;
-			y4 = y + size / 2;
-			x3 = x - 0.01;
-			x4 = x + 0.01;
-		}
+	bool is_collision(double x3, double y3, double x4, double y4) {
 		double dx0 = x2 - x1;
 		double dx1 = x4 - x3;
 		double dy0 = y2 - y1;
@@ -307,12 +294,59 @@ public:
 		return (p0 * p1 <= 0) && (p2 * p3 <= 0);
 	}
 	double get_oz(double c_x, double c_y) {
-		if (orient_x) {
-			return (c_x - (x - size / 2)) / size;
+		if (abs(x2 - x1) > abs(y2 - y1)) {
+			return abs((c_x - x1) / (x2 - x1));
 		}
 		else {
-			return abs(c_y - (y - size / 2)) / size;
+			return abs((c_y - y1) / (y2 - y1));
 		}
+	}
+};
+
+class CircleSprite3D {
+public:
+	double x, y;
+	double radius;
+	int texture_resolution;
+	long long id;
+	vector<vector<vector<char>>> texture;
+	int ry;
+	void init(double x_, double y_, double radius_, int texture_res, long long id_, int ry_) {
+		x = x_;
+		y = y_;
+		radius = radius_;
+		texture_resolution = texture_res;
+		id = id_;
+		ry = ry_;
+		texture.resize(texture_res, vector<vector<char>>(ry, vector<char>(3, 0)));
+
+	}
+	bool is_collision(double x_, double y_) {
+		return sqrt((x_ - x) * (x_ - x) + (y_ - y) * (y_ - y)) < radius;
+	}
+	double get_oz(double x_, double y_) {
+		double dx = x_ - x;
+		double dy = y_ - y;
+		return (atan2(dx, dy) /4/ PI+0.5);
+	}
+	void load_texture(int texture_code, string filename) {
+		sf::Image texture_img;
+		texture_img.loadFromFile(filename);
+		const sf::Uint8* pixels1 = new sf::Uint8[texture_resolution * ry * 4 + 4];
+		sf::Uint8* pixels2 = new sf::Uint8[texture_resolution * ry * 4 + 4];
+
+		pixels1 = texture_img.getPixelsPtr();
+		int i, j, k;
+		for (i = 0; i < texture_resolution; i++) {
+			for (j = 0; j < ry; j++) {
+				texture[i][j][0] = sfUint8_to_int(pixels1[i * texture_resolution * 4 + j * 4 - 4]);
+				texture[i][j][1] = sfUint8_to_int(pixels1[i * texture_resolution * 4 + j * 4 - 3]);
+				texture[i][j][2] = sfUint8_to_int(pixels1[i * texture_resolution * 4 + j * 4 - 2]);
+				texture[i][j][3] = sfUint8_to_int(pixels1[i * texture_resolution * 4 + j * 4 - 1]);
+			}
+		}
+
+
 	}
 };
 
@@ -324,7 +358,7 @@ public:
 	map<char, int> floor_dir;
 	map<char, int> ceil_dir;
 	map<char, int> map_dir;
-	vector<vector<vector<char>>> render_matrix;
+	vector<vector<vector<char>>> render_matrix, butt1;
 	vector<vector<vector<float>>> rays_steps;
 	vector<vector<int>> mAp, mAp_floor, mAp_ceil;
 	vector<vector<vector<double>>> sprites_flat_heights;
@@ -335,11 +369,12 @@ public:
 	vector<RectSprite3D> sprites_objects;
 	vector<FlatSprite3D> flat_sprites;
 	vector<UnvisibleRectSprite3D> unv_rect_collision;
+	vector<CircleSprite3D> circle_sprites;
 	float* floor_ceil_pcv_arr;
 	thread* threads_;
 	int d_angle;
 	int threads_num;
-	int integer_x, integer_y, page, map_width, map_height, n_of_objects, n_flat_sprites, n_colliders;
+	int integer_x, integer_y, page, map_width, map_height, n_of_objects, n_flat_sprites, n_colliders, n_circle_sprites;
 	
 	
 	sf::Uint8* bg_main;
@@ -347,6 +382,7 @@ public:
 	sf::Image bg_image;
 	double x_past, y_past;
 	double ray_step;
+	bool is_butt_1;
 	
 	sf::Uint8* pixels;
 
@@ -357,6 +393,7 @@ public:
 		index_global = 0;
 		rx = rx_;
 		ry = ry_;
+		is_butt_1 = false;
 		n_colliders = n_colliders_;
 		n_of_objects = n_of_objects_;
 		threads_num = 8;
@@ -383,6 +420,21 @@ public:
 				sorted_i_sf[g][gg][1] = 0;
 			}
 		}
+		butt1.resize(128, vector<vector<char>>(64, vector<char>(3, 0)));
+		sf::Image texture_img;
+		texture_img.loadFromFile("resources\\images\\butt1.png");
+		const sf::Uint8* pixels1 = new sf::Uint8[RESOLUTION_X * RESOLUTION_Y * 4 + 4];
+		sf::Uint8* pixels2 = new sf::Uint8[RESOLUTION_X * RESOLUTION_Y * 4 + 4];
+
+		pixels1 = texture_img.getPixelsPtr();
+		int i, j, k;
+		for (i = 0; i < 128; i++) {
+			for (j = 0; j < 64; j++) {
+				butt1[i][j][0] = sfUint8_to_int(pixels1[j * 128 * 4 + i * 4 - 4]);
+				butt1[i][j][1] = sfUint8_to_int(pixels1[j * 128 * 4 + i * 4 - 3]);
+				butt1[i][j][2] = sfUint8_to_int(pixels1[j * 128 * 4 + i * 4 - 2]);
+			}
+		}
 		render_matrix.resize(rx, vector<vector<char>>(ry, vector<char>(3, 0)));
 		rays_steps.resize(360, vector<vector<float>>(rx, vector<float>(2, 0)));
 		textures.resize(25, vector<vector<vector<char>>>(ry, vector<vector<char>>(ry, vector<char>(3, 0))));
@@ -396,7 +448,6 @@ public:
 		y = y_;
 		angle = angle_;
 		d_angle = 90.0;
-		int i, j, k;
 		ray_step = 1.0 / to_double(rx) *  ray_step_k;
 		std::cout << "inizialisation rays_steps" << endl;
 		//rays_steps[359][127][1] = 2.4;
@@ -430,6 +481,9 @@ public:
 	}
 	void add_collider(UnvisibleRectSprite3D sprite, int index_) {
 		unv_rect_collision[index_] = sprite;
+	}
+	void add_circle(CircleSprite3D sprite, int index_) {
+		circle_sprites[index_] = sprite;
 	}
 
 
@@ -603,6 +657,7 @@ public:
 			}
 			//cout << x << " " << y << ":" << map[0][2] << " " << int_x <<  " " << int_y << endl;
 			sprite_is = false;
+			heights[i][5] = 0;
 			while ((mAp[current_x][current_y] == 0) and (k < 10 / ray_step)) { // ѕроверка не врезалось ли
 				current_x += x_step; // делаем шаг x
 				current_y += y_step; // делаем шаг y
@@ -616,6 +671,17 @@ public:
 						oz = sprites_objects[ijk].get_oz(current_x, current_y, angle).oz;
 						k = to_int(10 / ray_step);
 						sprite_is = true;
+					}
+				}
+				for (ijk = 0; ijk < n_circle_sprites; ijk++) {
+
+					if (circle_sprites[ijk].is_collision(current_x, current_y)) {
+						code = 0;
+						oz = circle_sprites[ijk].get_oz(current_x, current_y);
+						k = to_int(10 / ray_step);
+						sprite_is = true;
+						heights[i][5] = 1;
+						heights[i][6] = ijk;
 					}
 				}
 				for (ijk = 0; ijk < n_flat_sprites; ijk++) {
@@ -699,11 +765,19 @@ public:
 					return left[1] > right[1];
 					});
 				for (j = 0; j < ry / 2; j++) {
+					sprite_is = false;
+					for (ijk = 0; ijk < n_flat_sprites; ijk++) {
+						//cout << ijk << " " << i << endl;
+						if ((ry / 2 - j) < sprites_flat_heights[ijk][i][2] && sprites_flat_heights[ijk][i][2] > heights[i][0])
+							sprite_is = true;
+					}
 					if ((ry / 2 - j) < heights[i][0]) {
 						light1 = sqrt(sqrt(sqrt(sqrt(1 / heights[i][0] * 10000))));
 						oz = heights[i][1];
 						code = to_int(heights[i][2]);
 						i1 = trunc(oz * ry);
+						i1 = min(ry - 1.0, i1);
+						i1 = max(0.0, i1);
 						i2 = ry / 2 - ry / 2 / heights[i][0] * (ry / 2 - j);
 						i3 = ry / 2 - ry / 2 / heights[i][0] * (j - ry / 2);
 						//cout << heights[i][0] / to_double(ry) * 2.0 * (ry / 2 - j - 1) << endl;
@@ -717,51 +791,72 @@ public:
 						//bool (*ptr) (vector<vector<double>>, vector<vector<double>>) = nullptr;
 						//ptr = &comp_fs;
 						
-						for (ijk = 0; ijk < n_flat_sprites; ijk++) {
-							//cout << sprites_flat_heights[ijk][i][1] << endl;
-							//cout << to_int(sorted_i_sf[ijk][0]) << "g" << i << "h" << endl;
-							if (sprites_flat_heights[to_int(sorted_i_sf[i][ijk][0])][i][1] == 1) {
-								//cout << "g";
-								if (((pix0_s == 0) && ((pix1_s == 0) && (pix2_s == 0)))) {
-									//cout << sorted_i_sf[ijk][0] << endl;
-									i2_s = ry / 2 - ry / 2 / sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][2] * (ry / 2 - j);
-									i3_s = ry / 2 - ry / 2 / sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][2] * (j - ry / 2);
-									pix0_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][0];
-									pix1_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][1];
-									pix2_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][2];
-								}
-								if (pix00_s == 0 && pix11_s == 0 and pix22_s == 0) {
-									pix00_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][0];
-									pix11_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][1];
-									pix22_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][2];
+						if (sprite_is) {
+
+							//cout << heights[i][0] / to_double(ry) * 2.0 * (ry / 2 - j - 1) << endl;
+
+							for (ijk = 0; ijk < n_flat_sprites; ijk++) {
+								//cout << sprites_flat_heights[ijk][i][1] << endl;
+								if (sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][1] == 1 && (ry / 2 - j) < sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][2]) {
+									//cout << "g";
+									if (pix0_s == 0 && pix1_s == 0 and pix2_s == 0) {
+
+										i2_s = ry / 2 - ry / 2 / sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][2] * (ry / 2 - j);
+										//cout << min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x) << endl;
+										pix0_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][0];
+										pix1_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][1];
+										pix2_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][2];
+									}
+									if (pix00_s == 0 && pix11_s == 0 and pix22_s == 0) {
+										i3_s = ry / 2 - ry / 2 / sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][2] * (j - ry / 2);
+										pix00_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][0];
+										pix11_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][1];
+										pix22_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][2];
+									}
+
 								}
 							}
-						}
 
-						if (pix0_s == 0 && pix1_s == 0 && pix2_s == 0) {
-							pix0 = textures[code][i2][i1][0];
-							pix1 = textures[code][i2][i1][1];
-							pix2 = textures[code][i2][i1][2];
-							//cout << ry / 2 / heights[i][0] * (ry / 2 + j - 1) << endl;
 
 						}
-						else {
-							pix0 = pix0_s;
-							pix1 = pix1_s;
-							pix2 = pix2_s;
-						}
-						if (pix00_s == 0 && pix11_s == 0 && pix22_s == 0) {
-							pix02 = textures[code][i3][i1][0];
-							pix12 = textures[code][i3][i1][1];
-							pix22 = textures[code][i3][i1][2];
-							//cout << ry / 2 / heights[i][0] * (ry / 2 + j - 1) << endl;
+							if (pix0_s == 0 && pix1_s == 0 && pix2_s == 0) {
+								if (heights[i][5] == 0) {
+									pix0 = textures[code][i2][i1][0];
+									pix1 = textures[code][i2][i1][1];
+									pix2 = textures[code][i2][i1][2];
+									//cout << ry / 2 / heights[i][0] * (ry / 2 + j - 1) << endl;
+								}
+								else {
+									pix0 = circle_sprites[heights[i][6]].texture[i2][i1][0];
+									pix1 = circle_sprites[heights[i][6]].texture[i2][i1][1];
+									pix2 = circle_sprites[heights[i][6]].texture[i2][i1][2];
+								}
 
-						}
-						else {
-							pix02 = pix00_s;
-							pix12 = pix11_s;
-							pix22 = pix22_s;
-						}
+							}
+							else {
+								pix0 = pix0_s;
+								pix1 = pix1_s;
+								pix2 = pix2_s;
+							}
+							if (pix00_s == 0 && pix11_s == 0 && pix22_s == 0) {
+								if (heights[i][5] == 0) {
+									pix02 = textures[code][i3][i1][0];
+									pix12 = textures[code][i3][i1][1];
+									pix22 = textures[code][i3][i1][2];
+									//cout << ry / 2 / heights[i][0] * (ry / 2 + j - 1) << endl;
+								}
+								else {
+									pix02 = circle_sprites[heights[i][6]].texture[i3][i1][0];
+									pix12 = circle_sprites[heights[i][6]].texture[i3][i1][1];
+									pix22 = circle_sprites[heights[i][6]].texture[i3][i1][2];
+								}
+							}
+							else {
+								pix02 = pix00_s;
+								pix12 = pix11_s;
+								pix22 = pix22_s;
+							}
+						
 						pixels[j * rx * 4 + i * 4] = pix0;
 						pixels[j * rx * 4 + i * 4 + 1] = pix1;
 						pixels[j * rx * 4 + i * 4 + 2] = pix2;
@@ -770,13 +865,9 @@ public:
 						pixels[(ry - j - 1) * rx * 4 + i * 4 + 2] = pix22;
 						//cout << pix0 << " " <<  pix1 << endl;
 					}
+					
 					else {
-						sprite_is = false;
-						for (ijk = 0; ijk < n_flat_sprites; ijk++) {
-							//cout << ijk << " " << i << endl;
-							if ((ry / 2 - j) < sprites_flat_heights[ijk][i][2] && sprites_flat_heights[ijk][i][2] > heights[i][0])
-								sprite_is = true;
-						}
+						
 						pix0_s = 0;
 						pix1_s = 0;
 						pix2_s = 0;
@@ -829,12 +920,12 @@ public:
 						aryf = abs(ry * oy_f);
 						//cout << arxf << endl;
 						up_code = mAp_ceil[dx_f][dy_f];
-						down_code = mAp_floor[dx_f][dx_f];
+						down_code = mAp_floor[dx_f][dy_f];
 
 						if (pix0_s == 0 && pix1_s == 0 && pix2_s == 0) {
-							pixels[j * rx * 4 + i * 4] = textures[up_code][arxf][aryf][0] * 0.95;
-							pixels[j * rx * 4 + i * 4 + 1] = textures[up_code][arxf][aryf][1] * 0.95;
-							pixels[j * rx * 4 + i * 4 + 2] = textures[up_code][arxf][aryf][2] * 0.95;
+							pixels[j * rx * 4 + i * 4] = textures[up_code][arxf][aryf][0];
+							pixels[j * rx * 4 + i * 4 + 1] = textures[up_code][arxf][aryf][1];
+							pixels[j * rx * 4 + i * 4 + 2] = textures[up_code][arxf][aryf][2];
 							//cout << ry / 2 / heights[i][0] * (ry / 2 + j - 1) << endl;
 
 						}
@@ -856,6 +947,11 @@ public:
 							pixels[(ry - j - 1) * rx * 4 + i * 4 + 2] = pix22_s;
 						}
 						
+					}
+					if (0 < j && j < 64 && 0 < i && i < 128 && is_butt_1) {
+						pixels[j * rx * 4 + i * 4] = butt1[i - 1][j - 1][0];
+						pixels[j * rx * 4 + i * 4 + 1] = butt1[i - 1][j - 1][1];
+						pixels[j * rx * 4 + i * 4 + 2] = butt1[i - 1][j - 1][2];
 					}
 						pixels[j * rx * 4 + i * 4 + 3] = 255;
 						pixels[(ry - j - 1) * rx * 4 + i * 4 + 3] = 255;
@@ -908,6 +1004,12 @@ public:
 				break;
 			}
 		}
+		for (i = 0; i < n_circle_sprites; i++) {
+			if (circle_sprites[i].is_collision(x, y)) {
+				coll = true;
+				break;
+			}
+		}
 		if (coll) {
 			x = x_past;
 			y = y_past;
@@ -931,6 +1033,12 @@ public:
 		}
 		for (i = 0; i < n_colliders; i++) {
 			if (unv_rect_collision[i].is_collision(x, y)) {
+				coll = true;
+				break;
+			}
+		}
+		for (i = 0; i < n_circle_sprites; i++) {
+			if (circle_sprites[i].is_collision(x, y)) {
 				coll = true;
 				break;
 			}
@@ -962,6 +1070,12 @@ public:
 				break;
 			}
 		}
+		for (i = 0; i < n_circle_sprites; i++) {
+			if (circle_sprites[i].is_collision(x, y)) {
+				coll = true;
+				break;
+			}
+		}
 		if (coll) {
 			x = x_past;
 			y = y_past;
@@ -989,6 +1103,12 @@ public:
 				break;
 			}
 		}
+		for (i = 0; i < n_circle_sprites; i++) {
+			if (circle_sprites[i].is_collision(x, y)) {
+				coll = true;
+				break;
+			}
+		}
 		if (coll) {
 			x = x_past;
 			y = y_past;
@@ -1007,11 +1127,13 @@ public:
 		RectSprite3D rect_sp;
 		FlatSprite3D flat_sp;
 		UnvisibleRectSprite3D coll_sp;
-		int i, k, fs, rs, cs;
+		CircleSprite3D crcl_sp;
+		int i, k, fs, rs, cs, ccs;
 		fs = 0;
 		rs = 0;
 		cs = 0;
 		k = 0;
+		ccs = 0;
 		int CRNT = 0;
 		int MAP = 1;
 		int SPR = 0;
@@ -1020,6 +1142,7 @@ public:
 		int FLT = 4;
 		int RCT = 5;
 		int CLD = 6;
+		int CRL = 7;
 		bool is_map, is_ceil, is_floor;
 		sprites_objects.resize(n_of_objects);
 		if (in.is_open())
@@ -1053,6 +1176,12 @@ public:
 			}
 			else if (lines[k] == "collider:") {
 				CRNT = CLD;
+				is_floor = false;
+				is_map = false;
+				is_ceil = false;
+			}
+			else if (lines[k] == "circle:") {
+				CRNT = CRL;
 				is_floor = false;
 				is_map = false;
 				is_ceil = false;
@@ -1141,7 +1270,7 @@ public:
 				if (CRNT == FLT) {
 					if (tokens[0] == "n") {
 						n_flat_sprites = atoi(tokens[1].c_str());
-						flat_sprites.resize(n_of_objects);
+						flat_sprites.resize(n_flat_sprites);
 						sprites_flat_heights.resize(n_flat_sprites, vector<vector<double>>(rx, vector<double>(10, 0)));
 						int gg, g;
 						sorted_i_sf.resize(rx, vector<vector<double>>(n_flat_sprites, vector<double>(2, 0)));
@@ -1165,16 +1294,16 @@ public:
 						}
 						flat_sp = FlatSprite3D();
 						flat_sp.init(
-							atof(tokens[0].c_str()), // x
-							atof(tokens[1].c_str()), // y
-							atoi(tokens[2].c_str()), // x size
-							atof(tokens[3].c_str()), // y size
-							atol(tokens[4].c_str()), // res x texture
-							atoi(tokens[5].c_str()), // res y texture
-							atoi(tokens[6].c_str()) // ry
+							atof(tokens[0].c_str()), // x1
+							atof(tokens[1].c_str()), // y1
+							atof(tokens[2].c_str()), // x2
+							atof(tokens[3].c_str()), // y2
+							atol(tokens[4].c_str()), // id
+							atoi(tokens[5].c_str()), // ry
+							atoi(tokens[6].c_str()) // texture resolution
 						);
 						
-						replaceAll(tokens[7], "{ry}", to_string(ry));
+						replaceAll(tokens[7], "{ry}", to_string(ry)); // texture filename
 						cout << tokens[7] << endl;
 						cout << fs << endl;
 						flat_sp.load_texture(0, tokens[7]);
@@ -1187,7 +1316,7 @@ public:
 				if (CRNT == CLD) {
 					if (tokens[0] == "n") {
 						n_colliders = atoi(tokens[1].c_str());
-						unv_rect_collision.resize(n_of_objects);
+						unv_rect_collision.resize(n_colliders);
 					}
 					else {
 						for (i = 0; i < tokens.size(); i++) {
@@ -1209,6 +1338,39 @@ public:
 						);
 						add_collider(coll_sp, cs);
 						cs += 1;
+					}
+
+
+				}
+				if (CRNT == CRL) {
+					if (tokens[0] == "n") {
+						n_circle_sprites = atoi(tokens[1].c_str());
+						circle_sprites.resize(n_circle_sprites);
+					}
+					else {
+						for (i = 0; i < tokens.size(); i++) {
+							if (tokens[i] == "ry") {
+								tokens[i] = to_string(ry);
+							}
+							if (tokens[i] == "rx") {
+								tokens[i] = to_string(rx);
+							}
+
+						}
+						crcl_sp = CircleSprite3D();
+						crcl_sp.init(
+							atof(tokens[0].c_str()), // x
+							atof(tokens[1].c_str()), // y
+							atof(tokens[2].c_str()), // x size
+							atoi(tokens[3].c_str()), // y size
+							atoi(tokens[4].c_str()), // res x texture
+							atoi(tokens[5].c_str()) // res x texture
+						);
+						replaceAll(tokens[6], "{ry}", to_string(ry)); // texture filename
+						crcl_sp.load_texture(0, tokens[6]);
+						
+						add_circle(crcl_sp, ccs);
+						ccs += 1;
 					}
 
 
