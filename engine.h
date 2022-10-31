@@ -371,6 +371,8 @@ public:
 	vector<UnvisibleRectSprite3D> unv_rect_collision;
 	vector<CircleSprite3D> circle_sprites;
 	float* floor_ceil_pcv_arr;
+	thread* threads_heights;
+	thread* threads_render;
 	thread* threads_;
 	int d_angle;
 	int threads_num;
@@ -383,21 +385,28 @@ public:
 	double x_past, y_past;
 	double ray_step;
 	bool is_butt_1;
+	bool is_stoped_heights, is_h;
+	bool is_render;
+	bool not_load;
 	
 	sf::Uint8* pixels;
 
 
 	void init(double x_, double y_, double angle_, string bg_main_filename, double ray_step_k, int rx_, int ry_, int n_of_objects_, int n_flat_sprites_, int n_colliders_) {
+		not_load = true;
+		is_stoped_heights = true;
 		RESOLUTION_X = rx_;
 		RESOLUTION_Y = ry_;
 		index_global = 0;
 		rx = rx_;
 		ry = ry_;
+		is_h = false;
 		is_butt_1 = false;
 		n_colliders = n_colliders_;
 		n_of_objects = n_of_objects_;
-		threads_num = 8;
-		threads_ = new thread[threads_num];
+		threads_num = std::thread::hardware_concurrency();
+		cout << "threads: " << threads_num << endl;
+		threads_heights = new thread[threads_num];
 		floor_ceil_pcv_arr = new float[180 * rx * ry * 2];
 		sprites_objects.resize(n_of_objects);
 		unv_rect_collision.resize(n_colliders);
@@ -469,7 +478,13 @@ public:
 				}
 			}
 		}
+		threads_heights = new thread[threads_num];
+
+		threads_render = new thread[threads_num];
+		threads_ = new thread[threads_num];
 		//cout << rays_steps[0][0][0] << endl;
+		is_render = true;
+		not_load = false;
 
 	}
 	void add_rect_sprite(RectSprite3D sprite, int index_) {
@@ -643,7 +658,7 @@ public:
 		int_angle = round(angle);
 		oz = 0;
 
-		for (i = 0; i < rx; i++) {
+		for (i = i_start; i < i_end; i++) {
 			//int_x = trunc(x); // приводим к целому чтобы был индекс массива
 			//int_y = trunc(y); // приводим к целому чтобы был индекс массива
 			k = 0;
@@ -723,9 +738,9 @@ public:
 			heights[i][2] = code; // код текстуры
 		}
 	}
+
 	void stage_heights() {
 		int i;
-		threads_ = new thread[threads_num];
 		if (page == 1) {
 			while (angle >= 360) {
 				angle -= 360.0;
@@ -733,16 +748,33 @@ public:
 			while (angle < 0) {
 				angle += 360.0;
 			}
-			for (i = 0; i < threads_num; i++) {
-				threads_[i] = thread(&Engine3D::thread_stage_heights, this, rx / threads_num * i, rx / threads_num * (i + 1), threads_num);
+			/*
+			if (is_h) {
+				for (i = 0; i < threads_num; i++) {
+					threads_heights[i].join();
+				}
+			}
+			else {
+				is_h = true;
 			}
 			for (i = 0; i < threads_num; i++) {
-				threads_[i].join();
+				threads_heights[i] = thread(&Engine3D::loop_thread_stage_heights, this, rx / threads_num * i, rx / threads_num * (i + 1), threads_num);
+			}*/
+			
+			for (i = 0; i < threads_num; i++) {
+				threads_heights[i] = thread(&Engine3D::thread_stage_heights, this, rx / threads_num * i, rx / threads_num * (i + 1), threads_num);
 			}
+			
+			for (i = 0; i < threads_num; i++) {
+				threads_heights[i].join();
+			}
+			
+			//thread_stage_heights(0, rx, 1);
+			
 			
 		}
 	}
-	void thread_stage_render(int i_start, int i_end, int threads_number) {
+	void thread_stage_render(int i_start, int i_end, int threads_number, int alpha) {
 		int i, j, k, code, pix0, pix1, pix2, pix02, pix12, pix22, arxf, aryf, up_code,down_code, ijk, ij;
 		double oz, i1, i2, i3, i4, distance_for_floor, dx_f, dy_f, ox_f, oy_f, light1, max_h, i2_s, i3_s;
 		int pix0_s, pix1_s, pix2_s, pix00_s, pix11_s, pix22_s;
@@ -953,30 +985,54 @@ public:
 						pixels[j * rx * 4 + i * 4 + 1] = butt1[i - 1][j - 1][1];
 						pixels[j * rx * 4 + i * 4 + 2] = butt1[i - 1][j - 1][2];
 					}
-						pixels[j * rx * 4 + i * 4 + 3] = 255;
-						pixels[(ry - j - 1) * rx * 4 + i * 4 + 3] = 255;
+						pixels[j * rx * 4 + i * 4 + 3] = alpha;
+						pixels[(ry - j - 1) * rx * 4 + i * 4 + 3] = alpha;
 					}
 				}
 			
 		}
 	}
+
+	void thread_stage_render_heights(int i_start, int i_end, int threads_number, int alpha) {
+		thread_stage_heights(i_start, i_end, threads_number);
+		thread_stage_render(i_start, i_end, threads_number, alpha);
+	}
 	
-	sf::Uint8* stage_render(sf::Texture texture_target, sf::Sprite sprite_target) {
+	sf::Uint8* stage_render(sf::Texture texture_target, sf::Sprite sprite_target, int alpha) {
+		
+		
+		
+	}
+	sf::Uint8* alternative_stage(sf::Texture texture_target, sf::Sprite sprite_target, int alpha) {
 		//cout << "stage_render" << endl;
 		int i;
-		threads_ = new thread[threads_num];
-		if (page ==  1) {
+
+		if (page == 1) {
 			
 			for (i = 0; i < threads_num; i++) {
-				threads_[i] = thread(&Engine3D::thread_stage_render, this, rx/ threads_num *i, rx/ threads_num *(i+1), threads_num);
+				threads_[i] = thread(&Engine3D::thread_stage_render_heights, this, rx / threads_num * i, rx / threads_num * (i + 1), threads_num, alpha);
 			}
-			for (i = 0; i < threads_num; i++) {
-				threads_[i].join();
+			if (threads_num != 8) {
+				for (i = 0; i < threads_num; i++) {
+					threads_[i].join();
+				}
 			}
+			else {
+				threads_[0].join();
+				threads_[7].join();
+				threads_[1].join();
+				threads_[6].join();
+				threads_[2].join();
+				threads_[5].join();
+				threads_[3].join();
+				threads_[4].join();
+			}
+
+			//thread_stage_render(0, rx, 1, alpha);
 			return pixels;
-			
+
 		}
-		else if (page == 0) {
+		if (page == 0) {
 			return bg_main;
 		}
 		return pixels;

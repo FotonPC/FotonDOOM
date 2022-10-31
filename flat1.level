@@ -10,9 +10,9 @@ sprites:
 		1.5 4.5 1.5 5.5 0 ry ry resources\images\textures\zonq{ry}.png
 		2.0 4.5 2.0 5.5 0 ry ry resources\images\textures\zonq{ry}.png
 		1.5 5.5 2 5.5 0 ry ry resources\images\textures\zonq{ry}.png
-		1.5 2.8 1.7 2.8 0 ry ry resources\images\audio_top_512.png
-		1.5 2.8 1.5 3 0 ry ry resources\images\audio_side_512.png
-		1.7 2.8 1.7 3 0 ry ry resources\images\audio_side_512.png
+		1.5 2.8 1.7 2.8 0 ry ry resources\images\audio_top_{ry}.png
+		1.5 2.8 1.5 3 0 ry ry resources\images\audio_side_{ry}.png
+		1.7 2.8 1.7 3 0 ry ry resources\images\audio_side_{ry}.png
 	collider:
 		n 1
 		1.75 5 0.5 1 0
@@ -20,8 +20,8 @@ sprites:
 		n 4
 		1.5 1.5 0.1 ry 0 ry resources\images\textures\column1_{ry}.png
 		1.5 2.5 0.1 ry 0 ry resources\images\textures\column1_{ry}.png
-		4.5 2.5 0.1 ry 0 ry resources\images\textures\marble512.png
-		4.5 1.5 0.1 ry 0 ry resources\images\textures\marble512.png
+		4.5 2.5 0.1 ry 0 ry resources\images\textures\marble{ry}.png
+		4.5 1.5 0.1 ry 0 ry resources\images\textures\marble{ry}.png
 map:
 	map resources\maps\flat1.map
 	0 0

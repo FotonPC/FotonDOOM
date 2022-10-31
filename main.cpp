@@ -16,7 +16,10 @@ sf::Uint8 convert_to_uint8(int x) {
     return sf::Uint8(min(255, max(0, x)));
 };
 
+void load_engine(Engine3D &engine, int ry, double ray_step_koef, int rx, int n_r_sp, int n_f_sp, int n_clls) {
 
+    engine.init(2, 2, 90, "resources\\images\\bg_menu" + std::to_string(ry) + ".png", ray_step_koef, rx, ry, n_r_sp, n_f_sp, n_clls);
+};
 
 
 int main()
@@ -32,6 +35,7 @@ int main()
     std::string line;
     std::ifstream in("settings.txt");
     int str_len, k2;
+    int screen_resolution_d_unstable;
     k2 = 0;
     if (in.is_open())
     {
@@ -78,6 +82,9 @@ int main()
                     ry = 1024;
                 }
             }
+            if (k2 == 2) {
+                screen_resolution_d_unstable = atoi(line.c_str());
+            }
             k2++;
         }
     }
@@ -95,40 +102,149 @@ int main()
     int n_f_sp = 8;
     int n_clls = 1;
 
-    
+    sf::Font font;
+    font.loadFromFile("resources\\sansation.ttf");
+    sf::Text text("", font, 20);
+    text.setStyle(sf::Text::Bold | sf::Text::Underlined);
+    text.setString("Loading engine");
+    text.setPosition(0, 0);
+    window.draw(text);
+    window.display();
     Engine3D engine;
+    /*thread Thread_(&load_engine, &engine, ry, ray_step_koef, rx, n_r_sp, n_f_sp, n_clls);
+    while (engine.not_load) {
+        window.draw(text);
+        window.display();
+    }
+    Thread_.join();*/
     engine.init(2, 2, 90, "resources\\images\\bg_menu" + std::to_string(ry) + ".png", ray_step_koef, rx, ry, n_r_sp, n_f_sp, n_clls);
-    engine.load_level("flat1.level");
-    //engine.set_map("resources\\maps\\flat1.map");
-    engine.load_texture(0, "resources\\images\\textures\\parquet"+ std::to_string(ry)+".png");
-    engine.load_texture(1, "resources\\images\\textures\\brick" + std::to_string(ry) + ".png");
-    engine.load_texture(11, "resources\\images\\textures\\up" + std::to_string(ry) + ".png");
-    engine.load_texture(2, "resources\\images\\textures\\wood" + std::to_string(ry) + ".png");
-    engine.load_texture(3, "resources\\images\\textures\\marble" + std::to_string(ry) + ".png");
-    engine.load_texture(15, "resources\\images\\textures\\plika_" + std::to_string(ry) + ".png");
-    engine.load_texture(12, "resources\\images\\sprites\\door_1\\1_" + std::to_string(ry) + ".png");
-    engine.load_texture(13, "resources\\images\\sprites\\door_1\\2_" + std::to_string(ry) + ".png");
-    engine.load_texture(14, "resources\\images\\sprites\\door_1\\1_2_" + std::to_string(ry) + ".png");
-    engine.load_texture(4, "resources\\images\\textures\\shukat_" + std::to_string(ry) + ".png");
-    engine.load_texture(9, "resources\\images\\textures\\lift_" + std::to_string(ry) + ".png");
-    engine.load_texture(16, "resources\\images\\textures\\shukat_lamp_" + std::to_string(ry) + ".png");
-    //engine.load_texture(4, "resources\\images\\textures\\stone_old" + std::to_string(ry) + ".png");
-    //engine.load_texture(5, "resources\\images\\textures\\door" + std::to_string(ry) + ".png");
-    //engine.load_texture(10, "resources\\images\\textures\\fog" + std::to_string(ry) + ".png");
-
-    
-
-    cout << "File with MAP is loaded 3" << endl;
-    auto begin = std::chrono::steady_clock::now();
-    auto end = std::chrono::steady_clock::now();
-    auto elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
-    sf::Vertex point;
     sf::Texture texture;
     texture.create(RESOLUTION_X, RESOLUTION_Y);
     sf::Uint8* pixels = new sf::Uint8[RESOLUTION_X * RESOLUTION_Y * 4 + 4];
 
     sf::Sprite sprite(texture);
-    window.setFramerateLimit(240);
+    engine.page = 0;
+    window.clear();
+    pixels = engine.alternative_stage(texture, sprite, 255);
+    texture.update(pixels);
+    window.draw(sprite);
+    text.setString("Engine loaded. Loading level");
+    window.draw(text);
+    window.display();
+    engine.load_level("flat1.level");
+    //engine.set_map("resources\\maps\\flat1.map");
+    engine.load_texture(0, "resources\\images\\textures\\parquet"+ std::to_string(ry)+".png");
+    window.clear();
+    pixels = engine.alternative_stage(texture, sprite, 255);
+    texture.update(pixels);
+    window.draw(sprite);
+    text.setString("Loaded resources\\images\\textures\\parquet" + std::to_string(ry) + ".png");
+    window.draw(text);
+    window.display();
+    engine.load_texture(1, "resources\\images\\textures\\brick" + std::to_string(ry) + ".png");
+    window.clear();
+    pixels = engine.alternative_stage(texture, sprite, 255);
+    texture.update(pixels);
+    window.draw(sprite);
+    text.setString("Loaded resources\\images\\textures\\brick" + std::to_string(ry) + ".png");
+    window.draw(text);
+    window.display();
+    engine.load_texture(11, "resources\\images\\textures\\up" + std::to_string(ry) + ".png");
+    window.clear();
+    pixels = engine.alternative_stage(texture, sprite, 255);
+    texture.update(pixels);
+    window.draw(sprite);
+    text.setString("Loaded resources\\images\\textures\\up" + std::to_string(ry) + ".png");
+    window.draw(text);
+    window.display();
+    engine.load_texture(2, "resources\\images\\textures\\wood" + std::to_string(ry) + ".png");
+    window.clear();
+    pixels = engine.alternative_stage(texture, sprite, 255);
+    texture.update(pixels);
+    window.draw(sprite);
+    text.setString("Loaded resources\\images\\textures\\wood" + std::to_string(ry) + ".png");
+    window.draw(text);
+    window.display();
+    engine.load_texture(3, "resources\\images\\textures\\marble" + std::to_string(ry) + ".png");
+    window.clear();
+    pixels = engine.alternative_stage(texture, sprite, 255);
+    texture.update(pixels);
+    window.draw(sprite);
+    text.setString("Loaded resources\\images\\textures\\marble" + std::to_string(ry) + ".png");
+    window.draw(text);
+    window.display();
+    engine.load_texture(15, "resources\\images\\textures\\plika_" + std::to_string(ry) + ".png");
+    window.clear();
+    pixels = engine.alternative_stage(texture, sprite, 255);
+    texture.update(pixels);
+    window.draw(sprite);
+    text.setString("Loaded resources\\images\\textures\\plika_" + std::to_string(ry) + ".png");
+    window.draw(text);
+    window.display();
+    engine.load_texture(12, "resources\\images\\sprites\\door_1\\1_" + std::to_string(ry) + ".png");
+    window.clear();
+    pixels = engine.alternative_stage(texture, sprite, 255);
+    texture.update(pixels);
+    window.draw(sprite);
+    text.setString("Loaded resources\\images\\sprites\\door_1\\1_" + std::to_string(ry) + ".png");
+    window.draw(text);
+    window.display();
+    engine.load_texture(13, "resources\\images\\sprites\\door_1\\2_" + std::to_string(ry) + ".png");
+    window.clear();
+    pixels = engine.alternative_stage(texture, sprite, 255);
+    texture.update(pixels);
+    window.draw(sprite);
+    text.setString("Loaded resources\\images\\sprites\\door_1\\2_" + std::to_string(ry) + ".png");
+    window.draw(text);
+    window.display();
+    engine.load_texture(14, "resources\\images\\sprites\\door_1\\1_2_" + std::to_string(ry) + ".png");
+    window.clear();
+    pixels = engine.alternative_stage(texture, sprite, 255);
+    texture.update(pixels);
+    window.draw(sprite);
+    text.setString("Loaded resources\\images\\sprites\\door_1\\1_2_" + std::to_string(ry) + ".png");
+    window.draw(text);
+    window.display();
+    engine.load_texture(4, "resources\\images\\textures\\shukat_" + std::to_string(ry) + ".png");
+    window.clear();
+    pixels = engine.alternative_stage(texture, sprite, 255);
+    texture.update(pixels);
+    window.draw(sprite);
+    text.setString("Loaded resources\\images\\textures\\shukat_" + std::to_string(ry) + ".png");
+    window.draw(text);
+    window.display();
+    engine.load_texture(9, "resources\\images\\textures\\lift_" + std::to_string(ry) + ".png");
+    window.clear();
+    pixels = engine.alternative_stage(texture, sprite, 255);
+    texture.update(pixels);
+    window.draw(sprite);
+    text.setString("Loaded resources\\images\\textures\\lift_" + std::to_string(ry) + ".png");
+    window.draw(text);
+    window.display();
+    engine.load_texture(16, "resources\\images\\textures\\shukat_lamp_" + std::to_string(ry) + ".png");
+    //engine.load_texture(4, "resources\\images\\textures\\stone_old" + std::to_string(ry) + ".png");
+    //engine.load_texture(5, "resources\\images\\textures\\door" + std::to_string(ry) + ".png");
+    //engine.load_texture(10, "resources\\images\\textures\\fog" + std::to_string(ry) + ".png");
+    sf::Image icon;
+    if (!icon.loadFromFile("resources\\logo.png"))
+    {
+        return 1;
+    }
+    window.setIcon(512, 512, icon.getPixelsPtr());
+    window.clear();
+    pixels = engine.alternative_stage(texture, sprite, 255);
+    texture.update(pixels);
+    window.draw(sprite);
+    text.setString("Level & Textures loaded. Loading music and finish initizialing");
+    window.draw(text);
+    window.display();
+
+    auto begin = std::chrono::steady_clock::now();
+    auto end = std::chrono::steady_clock::now();
+    auto elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
+    sf::Vertex point;
+    
+    window.setFramerateLimit(120);
     engine.page = 0;
     sf::Mouse mouse;
     mouse = sf::Mouse();
@@ -154,6 +270,14 @@ int main()
 
     sf::Music music_butt1;
     music_butt1.openFromFile("resources\\audio\\butt1.ogg");
+
+    sf::Music music_menu;
+    music_menu.openFromFile("resources\\audio\\menu_v4.ogg");
+    music_menu.play();
+    music_menu.setVolume(50);
+    bool is_butt1_play;
+    is_butt1_play = False;
+    int alpha_after_menu = 0;
     
 
 
@@ -162,6 +286,25 @@ int main()
     int iteration_counter;
     iteration_counter = 0;
     double fps;
+    double a;
+        a = engine.sprites_objects[0].x_size;
+        engine.sprites_objects[0].x_size = engine.sprites_objects[0].y_size;
+        engine.sprites_objects[0].y_size = a;
+        engine.sprites_objects[0].orient_x = 1 - engine.sprites_objects[0].orient_x;
+
+        if (engine.sprites_objects[0].y == 9.05) {
+            engine.sprites_objects[0].y = 9.25;
+            engine.sprites_objects[0].x = 4.95;
+            door_open_counter = 1000;
+        }
+        else {
+
+            engine.sprites_objects[0].y = 9.05;
+            engine.sprites_objects[0].x = 4.75;
+            door_close_counter = 1000;
+
+        }
+    
     while (window.isOpen())
     {
         sf::Event event;
@@ -174,7 +317,7 @@ int main()
             {
                 if (engine.page == 1) {
                     try {
-                        engine.angle -= sf::Mouse::getPosition(window).x - (int)window.getSize().x / 2 + 9;
+                        engine.angle -= sf::Mouse::getPosition(window).x - (int)window.getSize().x / 2 + screen_resolution_d_unstable;
                         while (engine.angle >= 360) {
                             engine.angle -= 360.0;
                         }
@@ -204,7 +347,7 @@ int main()
                 if (event.key.code == sf::Keyboard::Space) {
                     cout << engine.x << " " << engine.y << endl;
                     double a;
-                    if (door_open_counter > 1.5 * fps && door_close_counter > fps / 2) {
+                    if (door_open_counter > 1.5 * fps && door_close_counter > fps / 2 && engine.x < 5 && engine.x > 4 && engine.y > 8.3 && engine.y < 10) {
                         a = engine.sprites_objects[0].x_size;
                         engine.sprites_objects[0].x_size = engine.sprites_objects[0].y_size;
                         engine.sprites_objects[0].y_size = a;
@@ -230,21 +373,37 @@ int main()
                 }
                 if (event.key.code == sf::Keyboard::F) {
                     if (engine.is_butt_1) {
-                        music_butt1.play();
+                        if (not is_butt1_play) {
+                            music_butt1.play();
+                            is_butt1_play = true;
+                        }
+                        else {
+                            music_butt1.pause();
+                            is_butt1_play = False;
+                        }
                     }
                 }
                 if (event.key.code == sf::Keyboard::Enter) {
                     if (engine.page == 0) {
+                        engine.is_stoped_heights = false;
                         engine.page = 1;
+                        alpha_after_menu = 1;
                         window.setMouseCursorVisible(false);
                         mouse.setPosition(sf::Vector2i(window.getPosition().x + real_width / 2, window.getPosition().y + real_height / 2));
                         window.setMouseCursorGrabbed(true);
+                        music_menu.stop();
+                        
 
                     }
                     else if (engine.page == 1) {
+                        engine.is_stoped_heights = true;
                         engine.page = 0;
+                        alpha_after_menu = 0;
                         window.setMouseCursorVisible(true);
                         window.setMouseCursorGrabbed(false);
+                        music_butt1.stop();
+                        music_menu.play();
+                        engine.is_stoped_heights = true;
                     }
                 }
             }
@@ -262,7 +421,7 @@ int main()
         
         clock.restart().asSeconds();
 
-        window.clear();
+        
         if (engine.page == 1) {
             is_step = false;
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
@@ -352,7 +511,7 @@ int main()
                 engine.angle += 360.0;
             }
             begin = std::chrono::steady_clock::now();
-            engine.stage_heights();
+            //engine.stage_heights();
             end = std::chrono::steady_clock::now();
             elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
             //if (iteration_counter % 30 == 0) { std::cout << "Heights time: " << elapsed_ms.count() << " mcs\n"; }
@@ -361,8 +520,10 @@ int main()
             door_open_counter++;
             door_close_counter++;
         }
+        window.clear();
         begin = std::chrono::steady_clock::now();
-        pixels = engine.stage_render(texture, sprite);
+        //pixels = engine.stage_render(texture, sprite, alpha_after_menu);
+        pixels = engine.alternative_stage(texture, sprite, alpha_after_menu);
         texture.update(pixels);
         window.draw(sprite);
         end = std::chrono::steady_clock::now();
@@ -403,6 +564,7 @@ int main()
         window.display();
         iteration_counter++;
         engine.is_butt_1 = (1.5 < engine.x && 2 > engine.x) && (2.5 < engine.y && 3 > engine.y);
+        alpha_after_menu = min(255, alpha_after_menu + 1);
     }
 
     return 0;
