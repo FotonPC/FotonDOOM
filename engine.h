@@ -63,6 +63,127 @@ void tokenize(std::string const& str, const char delim,
 		out.push_back(s);
 	}
 }
+struct Vector2{
+	double x;
+	double y;
+};
+
+Vector2 intersection_circle_line(Vector2 v_center, Vector2 v_begin, Vector2 v_end, double r)
+{ //находим дискрименант квадратного уравнения
+	double x, y, k, b, x1, y1, x2, y2, x_min, x_max, y_min, y_max;
+	Vector2 res;
+	x = v_center.x;
+	y = v_center.y;
+	x1 = v_begin.x + 0.00000001;
+	x2 = v_end.x - 0.00000001;
+	y1 = v_begin.y + 0.00000001;
+	y2 = v_end.y - 0.00000001;
+	if ((x2 - x1) == 0) {
+		cout << "math error" << endl;
+		res.x = 0;
+		res.y = 0;
+		return res;
+	}
+	k = (y2 - y1) / (x2 - x1);
+	if ((x2 - x1) == 0) {
+		cout << "math error" << endl;
+		res.x = 0;
+		res.y = 0;
+		return res;
+	}
+	b = (y1 * (x2 - x1) - x1 * (y2 - y1)) / (x2 - x1);
+	double d = (pow((2 * k * b - 2 * x - 2 * y * k), 2) - (4 + 4 * k * k) * (b * b - r * r + x * x + y * y - 2 * y * b));
+
+	//если он меньше 0, уравнение не имеет решения
+	if (d < 0)
+	{
+		res.x = 0;
+		res.y = 0;
+	}
+	else
+	{
+		//иначе находим корни квадратного уравнения
+		x1 = ((-(2 * k * b - 2 * x - 2 * y * k) - sqrt(d)) / (2 + 2 * k * k));
+		x2 = ((-(2 * k * b - 2 * x - 2 * y * k) + sqrt(d)) / (2 + 2 * k * k));
+		y1 = k * x1 + b;
+		y2 = k * x2 + b;
+		if ((x1 - v_begin.x) * (x1 - v_begin.x) + (y1 - v_begin.y) * (y1 - v_begin.y) < (x2 - v_begin.x) * (x2 - v_begin.x) + (y2 - v_begin.y) * (y2 - v_begin.y)) {
+			res.x = x1;
+			res.y = y1;
+		}
+		else {
+			res.x = x2;
+			res.y = y2;
+		}
+		x_min = min(v_begin.x, v_end.x);
+		x_max = max(v_begin.x, v_end.x);
+		y_min = min(v_begin.y, v_end.y);
+		y_max = max(v_begin.y, v_end.y);
+		if ((res.x < x_min || res.x > x_max) && (res.y < y_min || res.y > y_max)) {
+			res.x = 0;
+			res.y = 0;
+		}
+
+
+	}
+	return res;
+}
+Vector2 intersection_2_lines(Vector2 v1, Vector2 v2, Vector2 v3, Vector2 v4) {
+	double x1, y1, x2, y2, k1, b1, k2, b2, x, y;
+	Vector2 res;
+	//// Line 1 <<<
+	x1 = v1.x + 0.00000001;
+	x2 = v2.x - 0.00000001;
+	y1 = v1.y + 0.00000001;
+	y2 = v2.y - 0.00000001;
+	if ((x2 - x1) == 0) {
+		cout << "math error" << endl;
+		res.x = 0;
+		res.y = 0;
+		return res;
+	}
+	k1 = (y2-y1) / (x2-x1);
+	if ((x2 - x1) == 0) {
+		cout << "math error" << endl;
+		res.x = 0;
+		res.y = 0;
+		return res;
+	}
+	b1 = (y1 * (x2 - x1) - x1 * (y2 - y1)) / (x2 - x1);
+	//// Line 1 >>>	
+	//// Line 2 <<<
+	x1 = v3.x + 0.00000001;
+	x2 = v4.x - 0.00000001;
+	y1 = v3.y + 0.00000001;
+	y2 = v4.y - 0.00000001;
+	if ((x2 - x1) == 0) {
+		cout << "math error" << endl;
+		res.x = 0;
+		res.y = 0;
+		return res;
+	}
+	k2 = (y2 - y1) / (x2 - x1);
+	if ((x2 - x1) == 0) {
+		cout << "math error" << endl;
+		res.x = 0;
+		res.y = 0;
+		return res;
+	}
+	b2 = (y1 * (x2 - x1) - x1 * (y2 - y1)) / (x2 - x1);
+	//// Line 2 >>>
+	if ((k1 - k2) == 0) {
+		cout << "math error" << endl;
+		res.x = 0;
+		res.y = 0;
+		return res;
+	}
+	x = (b2 - b1) / (k1 - k2);
+	y = k2 * x + b2;
+	res.x = x;
+	res.y = y;
+	return res;
+
+}
 
 
 struct OZ_Code_struct {
@@ -169,6 +290,29 @@ for (i = 0; i < res_x_texture; i++) {
 	void set_orient_x(bool is23) {
 
 	}
+	bool intersect(Vector2 v1, Vector2 v2) {
+		if (is_intersect(x-x_size/2, y-y_size/2, x + x_size/2, y+y_size/2, v1.x, v1.y, v2.x, v2.y)) {
+			return true;
+		}
+		else if (is_intersect(x - x_size / 2, y + y_size / 2, x + x_size / 2, y - y_size / 2, v1.x, v1.y, v2.x, v2.y)) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	bool is_intersect(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
+		
+		double dx0 = x2 - x1;
+		double dx1 = x4 - x3;
+		double dy0 = y2 - y1;
+		double dy1 = y4 - y3;
+		double p0 = dy1 * (x4 - x1) - dx1 * (y4 - y1);
+		double p1 = dy1 * (x4 - x2) - dx1 * (y4 - y2);
+		double p2 = dy0 * (x2 - x3) - dx0 * (y2 - y3);
+		double p3 = dy0 * (x2 - x4) - dx0 * (y2 - y4);
+		return (p0 * p1 <= 0) && (p2 * p3 <= 0);
+	}
 	bool is_collision(double x_, double y_) {
 		if (abs(x - x_) <= x_size / 2 && abs(y - y_) <= y_size / 2) {
 			return true;
@@ -237,17 +381,18 @@ for (i = 0; i < res_x_texture; i++) {
 
 class FlatSprite3D {
 public:
-	double x1, y1, x2, y2;
+	double x1, y1, x2, y2, x, y;
+	double angle;
 	long long id;
-	int ry, texture_size_x;
-	vector<vector<vector<char>>> image;
+	int ry, texture_size_x, ctc;
+	vector<vector<vector<vector<char>>>> image;
 	vector<vector<vector<double>>> triangles;
 	void (*get_capture)(double, double, long long, bool, vector<vector<vector<char>>>&, vector<vector<vector<double>>>&) {
 
 	};
 
 
-	void init(double x1_, double y1_, double x2_, double y2_, long long id_, int ry_, int texture_size_x_) {
+	void init(double x1_, double y1_, double x2_, double y2_, long long id_, int ry_, int texture_size_x_, int images_) {
 		//void (*get_capture_)(double, double, long long, bool, vector<vector<vector<char>>>&, vector<vector<vector<double>>>&), int ry_, int texture_size_x_) {
 		//get_capture = get_capture_;
 		x1 = x1_;
@@ -257,7 +402,11 @@ public:
 		id = id_;
 		ry = ry_;
 		texture_size_x = texture_size_x_;
-		image.resize(texture_size_x, vector<vector<char>>(ry, vector<char>(4, 0)));
+		image.resize(images_ , vector<vector<vector<char>>>(texture_size_x, vector<vector<char>>(ry, vector<char>(4, 0))));
+		x = x1 + (x2 - x1)/2;
+		y = y1 + (y2 - y1)/2;
+		angle = 0;
+		ctc = 0;
 	}
 	void render_stage(double angle, double x_, double y_) {
 
@@ -273,13 +422,43 @@ public:
 		int i, j, k;
 		for (i = 0; i < texture_size_x; i++) {
 			for (j = 0; j < ry; j++) {
-				image[i][j][0] = sfUint8_to_int(pixels1[i * ry * 4 + j * 4 - 4]);
-				image[i][j][1] = sfUint8_to_int(pixels1[i * ry * 4 + j * 4 - 3]);
-				image[i][j][2] = sfUint8_to_int(pixels1[i * ry * 4 + j * 4 - 2]);
-				image[i][j][3] = sfUint8_to_int(pixels1[i * ry * 4 + j * 4 - 1]);
+				image[texture_code][i][j][0] = sfUint8_to_int(pixels1[i * ry * 4 + j * 4 - 4]);
+				image[texture_code][i][j][1] = sfUint8_to_int(pixels1[i * ry * 4 + j * 4 - 3]);
+				image[texture_code][i][j][2] = sfUint8_to_int(pixels1[i * ry * 4 + j * 4 - 2]);
+				image[texture_code][i][j][3] = sfUint8_to_int(pixels1[i * ry * 4 + j * 4 - 1]);
 			}
 		}
 
+
+	}
+	void set_diff(double x_, double y_) {
+		x1 += x_;
+		x2 += x_;
+		y1 += y_;
+		y2 += y_;
+		x += x_;
+		y += y_;
+	}
+	void set_angle(double angle_) {
+		double size;
+		size = sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2))/ 2;
+		x1 = x - cos(angle) * size;
+		x2 = x + cos(angle) * size;
+		y1 = y - sin(angle) * size;
+		y2 = y + sin(angle) * size;
+		angle = angle_;
+	}
+	void set_pos(double x_, double y_) {
+		x = x_;
+		y = y_;
+		double x1_ = x - (x2 - x1) / 2;
+		double x2_ = x + (x2 - x1) / 2;
+		double y1_ = y - (y2 - y1) / 2;
+		double y2_ = y + (y2 - y1) / 2;
+		x1 = x1_;
+		x2 = x2_;
+		y1 = y1_;
+		y2 = y2_;
 
 	}
 	bool is_collision(double x3, double y3, double x4, double y4) {
@@ -688,30 +867,91 @@ public:
 						sprite_is = true;
 					}
 				}
-				for (ijk = 0; ijk < n_circle_sprites; ijk++) {
-
-					if (circle_sprites[ijk].is_collision(current_x, current_y)) {
-						code = 0;
-						oz = circle_sprites[ijk].get_oz(current_x, current_y);
-						k = to_int(10 / ray_step);
-						sprite_is = true;
-						heights[i][5] = 1;
-						heights[i][6] = ijk;
-					}
-				}
-				for (ijk = 0; ijk < n_flat_sprites; ijk++) {
-					if (flat_sprites[ijk].is_collision(current_x, current_y, current_x + x_step, current_y + y_step)) {
-						sprites_flat_heights[ijk][i][0] = flat_sprites[ijk].get_oz(current_x, current_y);
-						sprites_flat_heights[ijk][i][1] = 1;
-						dx = current_x - x;
-						dy = current_y - y;
-						
-						sprites_flat_heights[ijk][i][2] = abs((1 / (sqrt(dx * dx + dy * dy) * cos(radians(to_double(i) / to_double(rx) * 90.0 - 45.0)))) * ry / 2.0);
-					}
-				}
+				
+				
 				k++;
 			}
+			for (ijk = 0; ijk < n_circle_sprites; ijk++) {
+				Vector2 res, v1, v2, v3;
+				v1.x = circle_sprites[ijk].x;
+				v1.y = circle_sprites[ijk].y;
+				v2.x = x;
+				v2.y = y;
+				v3.x = current_x;
+				v3.y = current_y;
+				res = intersection_circle_line(v1, v2, v3, circle_sprites[ijk].radius);
 
+				if (res.x!=0 || res.y!=0) {
+					code = 0;
+					oz = circle_sprites[ijk].get_oz(res.x, res.y);
+					k = to_int(10 / ray_step);
+					sprite_is = true;
+					heights[i][5] = 1;
+					heights[i][6] = ijk;
+					current_x = res.x;
+					current_y = res.y;
+				}
+			}
+			for (ijk = 1; ijk < n_flat_sprites; ijk++) {
+				if (flat_sprites[ijk].is_collision(x, y, current_x, current_y)) {
+
+
+					try {
+						//cout << ijk << endl;
+						Vector2 v1, v2, v3, v4, vres;
+						v1.x = current_x;
+						v1.y = current_y;
+						v2.x = x;
+						v2.y = y;
+						v3.x = flat_sprites[ijk].x1;
+						v3.y = flat_sprites[ijk].y1;
+						v4.x = flat_sprites[ijk].x2;
+						v4.y = flat_sprites[ijk].y2;
+						vres = intersection_2_lines(v1, v2, v3, v4);
+
+						sprites_flat_heights[ijk][i][0] = flat_sprites[ijk].get_oz(vres.x, vres.y);
+						sprites_flat_heights[ijk][i][1] = 1;
+						dx = vres.x - x;
+						dy = vres.y - y;
+						//cout << vres.x << " " << vres.y << endl;
+
+						sprites_flat_heights[ijk][i][2] = abs((1 / (sqrt(dx * dx + dy * dy) * cos(radians(to_double(i) / to_double(rx) * 90.0 - 45.0)))) * ry / 2.0);
+					}
+					catch (...) {
+						cout << "heights flat error" << endl;
+
+					}
+				}
+			}
+			if (flat_sprites[0].is_collision(x, y, x_step*rx*2+x, y_step * rx * 2 + y)) {
+
+
+				try {
+					//cout << ijk << endl;
+					Vector2 v1, v2, v3, v4, vres;
+					v1.x = x_step * rx * 2 + x;
+					v1.y = y_step * rx * 2 + y;
+					v2.x = x;
+					v2.y = y;
+					v3.x = flat_sprites[0].x1;
+					v3.y = flat_sprites[0].y1;
+					v4.x = flat_sprites[0].x2;
+					v4.y = flat_sprites[0].y2;
+					vres = intersection_2_lines(v1, v2, v3, v4);
+
+					sprites_flat_heights[0][i][0] = flat_sprites[0].get_oz(vres.x, vres.y);
+					sprites_flat_heights[0][i][1] = 1;
+					dx = vres.x - x;
+					dy = vres.y - y;
+					//cout << vres.x << " " << vres.y << endl;
+
+					sprites_flat_heights[0][i][2] = abs((1 / (sqrt(dx * dx + dy * dy) * cos(radians(to_double(i) / to_double(rx) * 90.0 - 45.0)))) * ry / 2.0);
+				}
+				catch (...) {
+					cout << "heights flat error" << endl;
+
+				}
+			}
 			
 			//cout << cos(radians(abs(int_angle - d_angle / to_double(rx) * i))) << " " << i << " " << d_angle / to_double(rx) << endl;
 			dx = current_x - x;
@@ -777,7 +1017,7 @@ public:
 	void thread_stage_render(int i_start, int i_end, int threads_number, int alpha) {
 		int i, j, k, code, pix0, pix1, pix2, pix02, pix12, pix22, arxf, aryf, up_code,down_code, ijk, ij;
 		double oz, i1, i2, i3, i4, distance_for_floor, dx_f, dy_f, ox_f, oy_f, light1, max_h, i2_s, i3_s;
-		int pix0_s, pix1_s, pix2_s, pix00_s, pix11_s, pix22_s;
+		int pix0_s, pix1_s, pix2_s, pix00_s, pix11_s, pix22_s, pix0_s2, pix1_s2, pix2_s2, pix00_s2, pix11_s2, pix22_s2;
 		bool sprite_is;
 		sprite_is = true;
 		if (page == 1) {
@@ -819,6 +1059,12 @@ public:
 						pix00_s = 0;
 						pix11_s = 0;
 						pix22_s = 0;
+						pix0_s2 = 0;
+						pix1_s2 = 0;
+						pix2_s2 = 0;
+						pix00_s2 = 0;
+						pix11_s2 = 0;
+						pix22_s2 = 0;
 						index_global = i;
 						//bool (*ptr) (vector<vector<double>>, vector<vector<double>>) = nullptr;
 						//ptr = &comp_fs;
@@ -835,20 +1081,45 @@ public:
 
 										i2_s = ry / 2 - ry / 2 / sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][2] * (ry / 2 - j);
 										//cout << min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x) << endl;
-										pix0_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][0];
-										pix1_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][1];
-										pix2_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][2];
+										pix0_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][0];
+										pix1_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][1];
+										pix2_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][2];
 									}
 									if (pix00_s == 0 && pix11_s == 0 and pix22_s == 0) {
 										i3_s = ry / 2 - ry / 2 / sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][2] * (j - ry / 2);
-										pix00_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][0];
-										pix11_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][1];
-										pix22_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][2];
+										pix00_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][0];
+										pix11_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][1];
+										pix22_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][2];
 									}
 
 								}
 							}
 
+
+
+						}
+						if (sprites_flat_heights[0][i][1] == 1 && (ry / 2 - j) < sprites_flat_heights[0][i][2]) {
+							//cout << "g";
+							i2_s = ry / 2 - ry / 2 / sprites_flat_heights[0][i][2] * (ry / 2 - j);
+							//cout << min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x) << endl;
+							pix0_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][0];
+							pix1_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][1];
+							pix2_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][2];
+							if (pix0_s2 != 0 || pix1_s2 != 0 || pix2_s2 != 0) {
+								pix0_s = pix0_s2;
+								pix1_s = pix1_s2;
+								pix2_s = pix2_s2;
+							}
+
+							i3_s = ry / 2 - ry / 2 / sprites_flat_heights[0][i][2] * (j - ry / 2);
+							pix00_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][0];
+							pix11_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][1];
+							pix22_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][2];
+							if (pix00_s2 != 0 || pix11_s2 != 0 || pix22_s2 != 0) {
+								pix00_s = pix00_s2;
+								pix11_s = pix11_s2;
+								pix22_s = pix22_s2;
+							}
 
 						}
 							if (pix0_s == 0 && pix1_s == 0 && pix2_s == 0) {
@@ -906,8 +1177,14 @@ public:
 						pix00_s = 0;
 						pix11_s = 0;
 						pix22_s = 0;
+						pix0_s2 = 0;
+						pix1_s2 = 0;
+						pix2_s2 = 0;
+						pix00_s2 = 0;
+						pix11_s2 = 0;
+						pix22_s2 = 0;
 						if (sprite_is) {
-							
+
 							//cout << heights[i][0] / to_double(ry) * 2.0 * (ry / 2 - j - 1) << endl;
 
 							for (ijk = 0; ijk < n_flat_sprites; ijk++) {
@@ -915,23 +1192,48 @@ public:
 								if (sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][1] == 1 && (ry / 2 - j) < sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][2]) {
 									//cout << "g";
 									if (pix0_s == 0 && pix1_s == 0 and pix2_s == 0) {
-										
+
 										i2_s = ry / 2 - ry / 2 / sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][2] * (ry / 2 - j);
 										//cout << min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x) << endl;
-										pix0_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][0];
-										pix1_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][1];
-										pix2_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][2];
+										pix0_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][0];
+										pix1_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][1];
+										pix2_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][2];
 									}
 									if (pix00_s == 0 && pix11_s == 0 and pix22_s == 0) {
 										i3_s = ry / 2 - ry / 2 / sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][2] * (j - ry / 2);
-										pix00_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][0];
-										pix11_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][1];
-										pix22_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][2];
+										pix00_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][0];
+										pix11_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][1];
+										pix22_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][2];
 									}
-									
+
 								}
 							}
 
+
+
+						}
+						if (sprites_flat_heights[0][i][1] == 1 && (ry / 2 - j) < sprites_flat_heights[0][i][2]) {
+							//cout << "g";
+							i2_s = ry / 2 - ry / 2 / sprites_flat_heights[0][i][2] * (ry / 2 - j);
+							//cout << min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x) << endl;
+							pix0_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][0];
+							pix1_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][1];
+							pix2_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][2];
+							if (pix0_s2 != 0 || pix1_s2 != 0 || pix2_s2 != 0) {
+								pix0_s = pix0_s2;
+								pix1_s = pix1_s2;
+								pix2_s = pix2_s2;
+							}
+
+							i3_s = ry / 2 - ry / 2 / sprites_flat_heights[0][i][2] * (j - ry / 2);
+							pix00_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][0];
+							pix11_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][1];
+							pix22_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][2];
+							if (pix00_s2 != 0 || pix11_s2 != 0 || pix22_s2 != 0) {
+								pix00_s = pix00_s2;
+								pix11_s = pix11_s2;
+								pix22_s = pix22_s2;
+							}
 
 						}
 
@@ -999,10 +1301,27 @@ public:
 	}
 	
 	sf::Uint8* stage_render(sf::Texture texture_target, sf::Sprite sprite_target, int alpha) {
-		
-		
-		
+		int i;
+
+		if (page == 1) {
+
+			for (i = 0; i < threads_num; i++) {
+				threads_render[i] = thread(&Engine3D::thread_stage_render, this, rx / threads_num * i, rx / threads_num * (i + 1), threads_num, alpha);
+			}
+			if (threads_num >= 0) {
+				for (i = 0; i < threads_num; i++) {
+					threads_render[i].join();
+				}
+			}
+		}
+		if (page == 0) {
+			return bg_main;
+		}
+		return pixels;
 	}
+		
+		
+	
 	sf::Uint8* alternative_stage(sf::Texture texture_target, sf::Sprite sprite_target, int alpha) {
 		//cout << "stage_render" << endl;
 		int i;
@@ -1356,7 +1675,8 @@ public:
 							atof(tokens[3].c_str()), // y2
 							atol(tokens[4].c_str()), // id
 							atoi(tokens[5].c_str()), // ry
-							atoi(tokens[6].c_str()) // texture resolution
+							atoi(tokens[6].c_str()), // texture resolution
+							atoi(tokens[8].c_str())
 						);
 						
 						replaceAll(tokens[7], "{ry}", to_string(ry)); // texture filename

@@ -99,7 +99,7 @@ int main()
     sf::RenderWindow window(sf::VideoMode(RESOLUTION_X, RESOLUTION_Y), "FotonDOOM on C++");
 
     int n_r_sp = 2;
-    int n_f_sp = 8;
+    int n_f_sp = 10;
     int n_clls = 1;
 
     sf::Font font;
@@ -304,7 +304,9 @@ int main()
             door_close_counter = 1000;
 
         }
-    
+
+        engine.flat_sprites[0].load_texture(1, "resources\\images\\hands2_" + std::to_string(ry) + ".png");
+       
     while (window.isOpen())
     {
         sf::Event event;
@@ -332,6 +334,8 @@ int main()
                     catch (...) {
                         cout << "Error in mouse move" << endl;
                     }
+                    engine.flat_sprites[0].set_pos(engine.x + cos(engine.angle / 180 * PI) / 2, engine.y + sin(engine.angle / 180 * PI) / 2);
+                    engine.flat_sprites[0].set_angle(engine.angle / 180 * PI + PI / 2);
                 }
             }
             if (event.type == sf::Event::Resized) {
@@ -345,7 +349,7 @@ int main()
                     }
                 }
                 if (event.key.code == sf::Keyboard::Space) {
-                    cout << engine.x << " " << engine.y << endl;
+                    cout << engine.x << " " << engine.y << " " << engine.angle << endl;
                     double a;
                     if (door_open_counter > 1.5 * fps && door_close_counter > fps / 2 && engine.x < 5 && engine.x > 4 && engine.y > 8.3 && engine.y < 10) {
                         a = engine.sprites_objects[0].x_size;
@@ -368,6 +372,7 @@ int main()
 
                         }
                     }
+                    
                     
                    
                 }
@@ -392,7 +397,8 @@ int main()
                         mouse.setPosition(sf::Vector2i(window.getPosition().x + real_width / 2, window.getPosition().y + real_height / 2));
                         window.setMouseCursorGrabbed(true);
                         music_menu.stop();
-                        
+                        //engine.stage_heights();
+
 
                     }
                     else if (engine.page == 1) {
@@ -465,6 +471,7 @@ int main()
                     sound1.stop();
                     step_counter = 0;
                     sound1.play();
+                    engine.flat_sprites[0].ctc = 1 - engine.flat_sprites[0].ctc;
                 }
                 is_step = true;
             }
@@ -476,6 +483,7 @@ int main()
                     sound1.stop();
                     step_counter = 0;
                     sound1.play();
+                    engine.flat_sprites[0].ctc = 1 - engine.flat_sprites[0].ctc;
                 }
                 is_step = true;
             }
@@ -487,6 +495,7 @@ int main()
                     sound1.stop();
                     step_counter = 0;
                     sound1.play();
+                    engine.flat_sprites[0].ctc = 1 - engine.flat_sprites[0].ctc;
                 }
                 is_step = true;
             }
@@ -498,6 +507,7 @@ int main()
                     sound1.stop();
                     step_counter = 0;
                     sound1.play();
+                    engine.flat_sprites[0].ctc = 1 - engine.flat_sprites[0].ctc;
                 }
                 is_step = true;
             }
@@ -519,13 +529,19 @@ int main()
             step_counter++;
             door_open_counter++;
             door_close_counter++;
+            
         }
         window.clear();
         begin = std::chrono::steady_clock::now();
         //pixels = engine.stage_render(texture, sprite, alpha_after_menu);
+        engine.flat_sprites[0].set_pos(engine.x + cos(engine.angle / 180 * PI) / 2, engine.y + sin(engine.angle / 180 * PI) / 2);
+        engine.flat_sprites[0].set_angle(engine.angle / 180 * PI + PI / 2);
+        engine.flat_sprites[9].set_angle(engine.angle / 180 * PI + PI / 2);
+        engine.flat_sprites[9].set_diff((engine.x-engine.flat_sprites[9].x)/fps, (engine.y-engine.flat_sprites[9].y)/fps);
         pixels = engine.alternative_stage(texture, sprite, alpha_after_menu);
         texture.update(pixels);
         window.draw(sprite);
+        
         end = std::chrono::steady_clock::now();
         elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
         //if (iteration_counter % 30 == 0) { std::cout << "Render stage time: " << elapsed_ms.count() << " mcs\n"; }

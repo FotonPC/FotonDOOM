@@ -4,15 +4,17 @@ sprites:
 		4.75 9 0.1 0.5 ry ry ry 0 13 12 14
 		4.25 9 0.5 0.1 ry ry ry 1 2 4 4
 	flat:
-		n 8
-		1.2 1.5 1.2 2.5 0 ry ry resources\images\bed{ry}.png
-		1.5 4.5 2 4.5 0 ry ry resources\images\textures\zonq{ry}.png
-		1.5 4.5 1.5 5.5 0 ry ry resources\images\textures\zonq{ry}.png
-		2.0 4.5 2.0 5.5 0 ry ry resources\images\textures\zonq{ry}.png
-		1.5 5.5 2 5.5 0 ry ry resources\images\textures\zonq{ry}.png
-		1.5 2.8 1.7 2.8 0 ry ry resources\images\audio_top_{ry}.png
-		1.5 2.8 1.5 3 0 ry ry resources\images\audio_side_{ry}.png
-		1.7 2.8 1.7 3 0 ry ry resources\images\audio_side_{ry}.png
+		n 10
+		2 2 2 3 0 ry ry resources\images\hands1_{ry}.png 30
+		1.2 1.5 1.2 2.5 0 ry ry resources\images\bed{ry}.png 1
+		1.5 4.5 2 4.5 0 ry ry resources\images\textures\zonq{ry}.png 1
+		1.5 4.5 1.5 5.5 0 ry ry resources\images\textures\zonq{ry}.png 1
+		2.0 4.5 2.0 5.5 0 ry ry resources\images\textures\zonq{ry}.png 1
+		1.5 5.5 2 5.5 0 ry ry resources\images\textures\zonq{ry}.png 1
+		1.5 2.8 1.7 2.8 0 ry ry resources\images\audio_top_{ry}.png 1
+		1.5 2.8 1.5 3 0 ry ry resources\images\audio_side_{ry}.png 1
+		1.7 2.8 1.7 3 0 ry ry resources\images\audio_side_{ry}.png 1
+		2 2 2 3 0 ry ry resources\images\monster{ry}.png 1
 	collider:
 		n 1
 		1.75 5 0.5 1 0
