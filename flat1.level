@@ -19,11 +19,12 @@ sprites:
 		n 1
 		1.75 5 0.5 1 0
 	circle:
-		n 4
+		n 5
 		1.5 1.5 0.1 ry 0 ry resources\images\textures\column1_{ry}.png
 		1.5 2.5 0.1 ry 0 ry resources\images\textures\column1_{ry}.png
 		4.5 2.5 0.1 ry 0 ry resources\images\textures\marble{ry}.png
 		4.5 1.5 0.1 ry 0 ry resources\images\textures\marble{ry}.png
+		4.5 4.5 0.1 ry 0 ry resources\images\textures\marble{ry}.png
 map:
 	map resources\maps\flat1.map
 	0 0

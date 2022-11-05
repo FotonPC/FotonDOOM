@@ -11,6 +11,9 @@
 #include <SFML\\Audio.hpp>
 #include "engine.h"
 #include <vector>
+#include <windows.h>
+#include <algorithm>
+#include <cctype>
 
 sf::Uint8 convert_to_uint8(int x) {
     return sf::Uint8(min(255, max(0, x)));
@@ -24,17 +27,35 @@ void load_engine(Engine3D &engine, int ry, double ray_step_koef, int rx, int n_r
 
 int main()
 
-{
+{   
+    bool is_recommended_use_shaders = True;
+    // Get GPU ID 
+    DISPLAY_DEVICEA dd;
+    dd.cb = sizeof(DISPLAY_DEVICEA);
+    EnumDisplayDevicesA(NULL, 0, &dd, EDD_GET_DEVICE_INTERFACE_NAME);
+    string gpu_name = string(dd.DeviceString);
+    
+    std::transform(gpu_name.begin(), gpu_name.end(), gpu_name.begin(),
+        [](unsigned char c) { return std::tolower(c); });
+    cout << gpu_name << endl;
+    if (gpu_name.find(string("hd")) != std::string::npos) {
+        is_recommended_use_shaders = False;
+        cout << "Using shaders not recomended! Bad GPU" << endl;
+    }
     int RESOLUTION_X = 512;
     int RESOLUTION_Y = 256;
     int rx = RESOLUTION_X;
     int ry = RESOLUTION_Y;
+    bool is_use_shaders = True;
     
     double ray_step_koef;
     cout << "begin init" << endl;
     std::string line;
     std::ifstream in("settings.txt");
     int str_len, k2;
+    float u_blur = 10;
+    float u_viewnetka = 0.6;
+    double light_force = 30;
     int screen_resolution_d_unstable;
     k2 = 0;
     if (in.is_open())
@@ -85,6 +106,23 @@ int main()
             if (k2 == 2) {
                 screen_resolution_d_unstable = atoi(line.c_str());
             }
+            if (k2 == 3) {
+                if (line == "used") {
+                    is_use_shaders = True;
+                }
+                if (line == "notused") {
+                    is_use_shaders = False;
+            }
+            }
+            if (k2 == 4) {
+                u_blur = atof(line.c_str());
+            }
+            if (k2 == 5) {
+                u_viewnetka = atof(line.c_str());
+            }
+            if (k2 == 6) {
+                light_force = atof(line.c_str());
+            }
             k2++;
         }
     }
@@ -96,7 +134,7 @@ int main()
     real_width = rx;
     real_height = ry;
     
-    sf::RenderWindow window(sf::VideoMode(RESOLUTION_X, RESOLUTION_Y), "FotonDOOM on C++");
+    sf::RenderWindow window(sf::VideoMode(RESOLUTION_X, RESOLUTION_Y), "AgentF");
 
     int n_r_sp = 2;
     int n_f_sp = 10;
@@ -118,8 +156,15 @@ int main()
     }
     Thread_.join();*/
     engine.init(2, 2, 90, "resources\\images\\bg_menu" + std::to_string(ry) + ".png", ray_step_koef, rx, ry, n_r_sp, n_f_sp, n_clls);
+    engine.light_force = light_force;
+    engine.is_use_shaders = is_use_shaders;
     sf::Texture texture;
-    texture.create(RESOLUTION_X, RESOLUTION_Y);
+    sf::Texture h_map_texture;
+    sf::RenderTexture texture2, h_map_render;
+    texture2.create(RESOLUTION_X, RESOLUTION_Y);
+    h_map_render.create(rx, ry);
+    h_map_texture = h_map_render.getTexture();
+    texture = texture2.getTexture();
     sf::Uint8* pixels = new sf::Uint8[RESOLUTION_X * RESOLUTION_Y * 4 + 4];
 
     sf::Sprite sprite(texture);
@@ -306,6 +351,27 @@ int main()
         }
 
         engine.flat_sprites[0].load_texture(1, "resources\\images\\hands2_" + std::to_string(ry) + ".png");
+
+        sf::RenderTexture outputTexture;
+        sf::Shader shader;
+        sf::Sprite outputTextureSpriteFlipped;
+        sf::Sprite outputTextureSprite;
+
+        if (is_use_shaders) {
+
+            
+            outputTexture.create(rx, ry);
+            outputTextureSprite = sf::Sprite(outputTexture.getTexture());
+            outputTextureSpriteFlipped = sf::Sprite(texture);
+            outputTextureSpriteFlipped.setScale(1, -1);
+            outputTextureSpriteFlipped.setPosition(0, ry);
+            shader.loadFromFile("shader.frag", sf::Shader::Fragment);
+            shader.setUniform("rx", rx);
+            shader.setUniform("ry", ry);
+            shader.setUniform("u_blur", u_blur);
+            shader.setUniform("u_viewnetka", u_viewnetka);
+        }
+        
        
     while (window.isOpen())
     {
@@ -353,6 +419,11 @@ int main()
                     double a;
                     if (door_open_counter > 1.5 * fps && door_close_counter > fps / 2 && engine.x < 5 && engine.x > 4 && engine.y > 8.3 && engine.y < 10) {
                         a = engine.sprites_objects[0].x_size;
+                        double x_size_past = engine.sprites_objects[0].x_size;
+                        double y_size_past = engine.sprites_objects[0].y_size;
+                        bool orient_x_past = engine.sprites_objects[0].orient_x;
+                        double x_past = engine.sprites_objects[0].x;
+                        double y_past = engine.sprites_objects[0].y;
                         engine.sprites_objects[0].x_size = engine.sprites_objects[0].y_size;
                         engine.sprites_objects[0].y_size = a;
                         engine.sprites_objects[0].orient_x = 1 - engine.sprites_objects[0].orient_x;
@@ -369,7 +440,15 @@ int main()
                             engine.sprites_objects[0].x = 4.75;
                             sound3.play();
                             door_close_counter = 0;
-
+                        }
+                        if (engine.sprites_objects[0].is_collision(engine.x, engine.y)) {
+                            engine.sprites_objects[0].x_size = x_size_past;
+                            engine.sprites_objects[0].y_size = y_size_past;
+                            engine.sprites_objects[0].orient_x = orient_x_past;
+                            engine.sprites_objects[0].y = y_past;
+                            engine.sprites_objects[0].x = x_past;
+                            sound2.stop();
+                            sound3.stop();
                         }
                     }
                     
@@ -418,7 +497,7 @@ int main()
         fps = 1.0f / time.asSeconds();
         try {
             if (fps > 1 && iteration_counter % to_int(fps) < fps / 5.0) {
-                window.setTitle("FotonDOOM: FPS: " + to_string(to_int(fps)));
+                window.setTitle("AgentF: FPS: "+to_string(to_int(fps)));
             }
         }
         catch (...) {
@@ -521,6 +600,7 @@ int main()
                 engine.angle += 360.0;
             }
             begin = std::chrono::steady_clock::now();
+            //engine.thread_stage_heights(0, rx, 1);
             //engine.stage_heights();
             end = std::chrono::steady_clock::now();
             elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
@@ -533,19 +613,41 @@ int main()
         }
         window.clear();
         begin = std::chrono::steady_clock::now();
-        //pixels = engine.stage_render(texture, sprite, alpha_after_menu);
+        //engine.thread_stage_render(0, rx, 1, 255);
+        //pixels = engine.pixels;
+        
+       //pixels = engine.stage_render(texture, sprite, alpha_after_menu);
         engine.flat_sprites[0].set_pos(engine.x + cos(engine.angle / 180 * PI) / 2, engine.y + sin(engine.angle / 180 * PI) / 2);
         engine.flat_sprites[0].set_angle(engine.angle / 180 * PI + PI / 2);
         engine.flat_sprites[9].set_angle(engine.angle / 180 * PI + PI / 2);
-        engine.flat_sprites[9].set_diff((engine.x-engine.flat_sprites[9].x)/fps, (engine.y-engine.flat_sprites[9].y)/fps);
+        engine.flat_sprites[9].set_diff((engine.x-engine.flat_sprites[9].x-0.1)/fps, (engine.y-engine.flat_sprites[9].y-0.1)/fps);
+        //pixels = engine.alternative_stage(texture, sprite, alpha_after_menu);
         pixels = engine.alternative_stage(texture, sprite, alpha_after_menu);
         texture.update(pixels);
-        window.draw(sprite);
-        
+        if (is_use_shaders && engine.page == 1) {
+            pixels = engine.return_h_map();
+            h_map_texture.update(pixels);
+        }
         end = std::chrono::steady_clock::now();
         elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
-        //if (iteration_counter % 30 == 0) { std::cout << "Render stage time: " << elapsed_ms.count() << " mcs\n"; }
+        if (iteration_counter % 30 == 0) { std::cout << "Render stage time: " << elapsed_ms.count() << " mcs\n"; }
+
         begin = std::chrono::steady_clock::now();
+        if (is_use_shaders && engine.page==1) {
+            
+            shader.setUniform("u_resolution", sf::Glsl::Vec2{ window.getSize() });
+            shader.setUniform("u_time", clock.getElapsedTime().asSeconds());
+            shader.setUniform("u_sample", texture);
+            shader.setUniform("u_h_map", h_map_texture);
+            window.draw(sprite, &shader);
+        }
+        else {
+            window.draw(sprite);
+        }
+        end = std::chrono::steady_clock::now();
+        elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
+        if (iteration_counter % 30 == 0) { std::cout << "Shader time: " << elapsed_ms.count() << " mcs\n"; }
+        
         /*
 #pragma omp parallel for
 
@@ -574,9 +676,7 @@ int main()
                 window.draw(&point, 1, sf::Points);
             }
         }*/
-        end = std::chrono::steady_clock::now();
-        elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
-        //if (iteration_counter % 30 == 0) { std::cout << "Render time: " << elapsed_ms.count() << " mcs\n"; }
+        
         window.display();
         iteration_counter++;
         engine.is_butt_1 = (1.5 < engine.x && 2 > engine.x) && (2.5 < engine.y && 3 > engine.y);

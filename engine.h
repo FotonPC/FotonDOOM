@@ -1,6 +1,3 @@
-
-// Unimaginable engine
-
 // Unimaginable Engine
 // FotonEngine
 
@@ -15,10 +12,8 @@
 #include <fstream>
 #include <sstream>
 #include <cstring>
-//#include <omp.h>
 #include <time.h> 
 #include <chrono>
-//#include <amp.h>
 #include <thread>
 #include "sprites.h"
 #include <ostream>
@@ -40,6 +35,8 @@ int index_global;
 bool comp_fs(vector<double> a, vector<double> b) {
 	return a[1] < b[1];
 }
+
+
 
 void replaceAll(string& s, const string& search, const string& replace) {
 	for (size_t pos = 0; ; pos += replace.length()) {
@@ -66,6 +63,11 @@ void tokenize(std::string const& str, const char delim,
 struct Vector2{
 	double x;
 	double y;
+};
+struct Vector3 {
+	double x;
+	double y;
+	double z;
 };
 
 Vector2 intersection_circle_line(Vector2 v_center, Vector2 v_begin, Vector2 v_end, double r)
@@ -185,7 +187,14 @@ Vector2 intersection_2_lines(Vector2 v1, Vector2 v2, Vector2 v3, Vector2 v4) {
 
 }
 
-
+Vector3 double_to_rgb(double x) {
+	Vector3 res;
+	x *= 10000.0;
+	res.x = (int)x % 256;
+	res.y = ((int)x / 256) % 256;
+	res.z = (int)x / (256 * 256);
+	return res;
+}
 struct OZ_Code_struct {
 	double oz;
 	int part;
@@ -207,6 +216,9 @@ int to_int(double a) {
 int sfUint8_to_int(sf::Uint8 uint8_num) {
 	return uint8_num * 1;
 }
+double distance_vec2(Vector2 begin, Vector2 end) {
+	return sqrt((end.x-begin.x)* (end.x - begin.x) + (end.y-begin.y)* (end.y - begin.y));
+}
 
 class UnvisibleRectSprite3D {
 public:
@@ -227,6 +239,88 @@ public:
 			return true;
 		}
 		else return false;
+	}
+	bool intersect(Vector2 v1, Vector2 v2) {
+		if (is_intersect(x - x_size / 2, y - y_size / 2, x - x_size / 2, y + y_size / 2, v1.x, v1.y, v2.x, v2.y)) {
+			return True;
+		}
+		else if (is_intersect(x + x_size / 2, y - y_size / 2, x + x_size / 2, y + y_size / 2, v1.x, v1.y, v2.x, v2.y)) {
+			return True;
+		}
+		else if (is_intersect(x - x_size / 2, y - y_size / 2, x + x_size / 2, y - y_size / 2, v1.x, v1.y, v2.x, v2.y)) {
+			return True;
+		}
+		else if (is_intersect(x - x_size / 2, y + y_size / 2, x + x_size / 2, y + y_size / 2, v1.x, v1.y, v2.x, v2.y)) {
+			return True;
+		}
+		else {
+			return false;
+		}
+	}
+	Vector2 intersection_rect_line(Vector2 v_begin, Vector2 v_end) {
+		Vector2 v1, v2, v3, v4, vi1, vi2, vi3, vi4, res;
+		double d1, d2, d3, d4;
+		v1.x = x - x_size / 2;
+		v1.y = y - y_size / 2;
+		v2.x = x + x_size / 2;
+		v2.y = y - y_size / 2;
+		v3.x = x - x_size / 2;
+		v3.y = y + y_size / 2;
+		v4.x = x + x_size / 2;
+		v4.y = y + y_size / 2;
+		vi1 = intersection_2_lines(v_begin, v_end, v1, v2);
+		vi2 = intersection_2_lines(v_begin, v_end, v1, v3);
+		vi3 = intersection_2_lines(v_begin, v_end, v2, v4);
+		vi4 = intersection_2_lines(v_begin, v_end, v4, v3);
+		d1 = distance_vec2(v_begin, vi1);
+		d2 = distance_vec2(v_begin, vi2);
+		d3 = distance_vec2(v_begin, vi3);
+		d4 = distance_vec2(v_begin, vi4);
+		//
+
+		if (d1 <= d4 && is_intersect2(v1, v2, v_begin, v_end)) {
+			return vi1;
+		}
+		if (d2 <= d3 && is_intersect2(v1, v3, v_begin, v_end)) {
+			return vi2;
+		}
+		if (d3 <= d2 && is_intersect2(v2, v4, v_begin, v_end)) {
+			return vi3;
+		}
+		if (d4 <= d1 && is_intersect2(v4, v3, v_begin, v_end)) {
+			return vi4;
+		}
+
+		res.x = 0;
+		res.y = 0;
+		cout << "error" << endl;
+		return res;
+
+
+	}
+	bool is_intersect(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
+
+		double dx0 = x2 - x1;
+		double dx1 = x4 - x3;
+		double dy0 = y2 - y1;
+		double dy1 = y4 - y3;
+		double p0 = dy1 * (x4 - x1) - dx1 * (y4 - y1);
+		double p1 = dy1 * (x4 - x2) - dx1 * (y4 - y2);
+		double p2 = dy0 * (x2 - x3) - dx0 * (y2 - y3);
+		double p3 = dy0 * (x2 - x4) - dx0 * (y2 - y4);
+		return (p0 * p1 <= 0) && (p2 * p3 <= 0);
+	}
+	bool is_intersect2(Vector2 v1, Vector2 v2, Vector2 v3, Vector2 v4) {
+
+		double dx0 = v2.x - v1.x;
+		double dx1 = v4.x - v3.x;
+		double dy0 = v2.y - v1.y;
+		double dy1 = v4.y - v3.y;
+		double p0 = dy1 * (v4.x - v1.x) - dx1 * (v4.y - v1.y);
+		double p1 = dy1 * (v4.x - v2.x) - dx1 * (v4.y - v2.y);
+		double p2 = dy0 * (v2.x - v3.x) - dx0 * (v2.y - v3.y);
+		double p3 = dy0 * (v2.x - v4.x) - dx0 * (v2.y - v4.y);
+		return (p0 * p1 <= 0) && (p2 * p3 <= 0);
 	}
 };
 
@@ -261,15 +355,15 @@ public:
 		const sf::Uint8* pixels1 = new sf::Uint8[res_x_texture * ry * 4 + 4];
 		sf::Uint8* pixels2 = new sf::Uint8[res_x_texture * ry * 4 + 4];
 
-pixels1 = texture_img.getPixelsPtr();
-int i, j, k;
-for (i = 0; i < res_x_texture; i++) {
-	for (j = 0; j < ry; j++) {
-		textures_x[texture_code][i][j][0] = sfUint8_to_int(pixels1[i * ry * 4 + j * 4 - 4]);
-		textures_x[texture_code][i][j][1] = sfUint8_to_int(pixels1[i * ry * 4 + j * 4 - 3]);
-		textures_x[texture_code][i][j][2] = sfUint8_to_int(pixels1[i * ry * 4 + j * 4 - 2]);
-	}
-}
+		pixels1 = texture_img.getPixelsPtr();
+		int i, j, k;
+		for (i = 0; i < res_x_texture; i++) {
+			for (j = 0; j < ry; j++) {
+				textures_x[texture_code][i][j][0] = sfUint8_to_int(pixels1[i * ry * 4 + j * 4 - 4]);
+				textures_x[texture_code][i][j][1] = sfUint8_to_int(pixels1[i * ry * 4 + j * 4 - 3]);
+				textures_x[texture_code][i][j][2] = sfUint8_to_int(pixels1[i * ry * 4 + j * 4 - 2]);
+			}
+		}
 	}
 	void load_texture_y(string filename, int texture_code) {
 		sf::Image texture_img;
@@ -288,18 +382,156 @@ for (i = 0; i < res_x_texture; i++) {
 		}
 	}
 	void set_orient_x(bool is23) {
-
+		
 	}
 	bool intersect(Vector2 v1, Vector2 v2) {
-		if (is_intersect(x-x_size/2, y-y_size/2, x + x_size/2, y+y_size/2, v1.x, v1.y, v2.x, v2.y)) {
-			return true;
+		if(is_intersect(x-x_size/2, y-y_size/2, x - x_size/2, y+y_size/2, v1.x, v1.y, v2.x, v2.y)) {
+			return True;
 		}
-		else if (is_intersect(x - x_size / 2, y + y_size / 2, x + x_size / 2, y - y_size / 2, v1.x, v1.y, v2.x, v2.y)) {
-			return true;
+		else if (is_intersect(x + x_size / 2, y - y_size / 2, x + x_size / 2, y + y_size / 2, v1.x, v1.y, v2.x, v2.y)) {
+			return True;
+		}
+		else if (is_intersect(x - x_size / 2, y - y_size / 2, x + x_size / 2, y - y_size / 2, v1.x, v1.y, v2.x, v2.y)) {
+			return True;
+		}
+		else if (is_intersect(x - x_size / 2, y + y_size / 2, x + x_size / 2, y + y_size / 2, v1.x, v1.y, v2.x, v2.y)) {
+			return True;
 		}
 		else {
 			return false;
 		}
+	}
+	Vector2 intersection_rect_line(Vector2 v_begin, Vector2 v_end) {
+		Vector2 v1, v2, v3, v4, vi1, vi2, vi3, vi4, res;
+		double d1, d2, d3, d4;
+		v1.x = x - x_size / 2;
+		v1.y = y - y_size / 2;
+		v2.x = x + x_size / 2;
+		v2.y = y - y_size / 2;
+		v3.x = x - x_size / 2;
+		v3.y = y + y_size / 2;
+		v4.x = x + x_size / 2;
+		v4.y = y + y_size / 2;
+		vi1 = intersection_2_lines(v_begin, v_end, v1, v2);
+		vi2 = intersection_2_lines(v_begin, v_end, v1, v3);
+		vi3 = intersection_2_lines(v_begin, v_end, v2, v4);
+		vi4 = intersection_2_lines(v_begin, v_end, v4, v3);
+		d1 = distance_vec2(v_begin, vi1);
+		d2 = distance_vec2(v_begin, vi2);
+		d3 = distance_vec2(v_begin, vi3);
+		d4 = distance_vec2(v_begin, vi4);
+		//
+		if (is_intersect2(v1, v2, v_begin, v_end)) {
+			if (is_intersect2(v1, v3, v_begin, v_end)) {
+				if (d1 <= d2) {
+					return vi1;
+				}
+				else {
+					return vi2;
+				}
+			}
+			if (is_intersect2(v2, v4, v_begin, v_end)) {
+				if (d1 <= d3) {
+					return vi1;
+				}
+				else {
+					return vi3;
+				}
+			}
+			if (is_intersect2(v4, v3, v_begin, v_end)) {
+				if (d1 <= d4) {
+					return vi1;
+				}
+				else {
+					return vi4;
+				}
+			}
+		}
+		if (is_intersect2(v1, v3, v_begin, v_end)) {
+			if (is_intersect2(v1, v2, v_begin, v_end)) {
+				if (d2 <= d1) {
+					return vi2;
+				}
+				else {
+					return vi1;
+				}
+			}
+			if (is_intersect2(v2, v4, v_begin, v_end)) {
+				if (d2 <= d3) {
+					return vi2;
+				}
+				else {
+					return vi3;
+				}
+			}
+			if (is_intersect2(v4, v3, v_begin, v_end)) {
+				if (d2 <= d4) {
+					return vi2;
+				}
+				else {
+					return vi4;
+				}
+			}
+		}
+		if (is_intersect2(v2, v4, v_begin, v_end)) {
+			if (is_intersect2(v1, v3, v_begin, v_end)) {
+				if (d3 <= d2) {
+					return vi3;
+				}
+				else {
+					return vi2;
+				}
+			}
+			if (is_intersect2(v1, v2, v_begin, v_end)) {
+				if (d3 <= d1) {
+					return vi3;
+				}
+				else {
+					return vi1;
+				}
+			}
+			if (is_intersect2(v4, v3, v_begin, v_end)) {
+				if (d3 <= d4) {
+					return vi3;
+				}
+				else {
+					return vi4;
+				}
+			}
+		}
+		if (is_intersect2(v4, v3, v_begin, v_end)) {
+			if (is_intersect2(v1, v3, v_begin, v_end)) {
+				if (d4 <= d2) {
+					return vi4;
+				}
+				else {
+					return vi2;
+				}
+			}
+			if (is_intersect2(v1, v2, v_begin, v_end)) {
+				if (d4 <= d1) {
+					return vi4;
+				}
+				else {
+					return vi1;
+				}
+			}
+			if (is_intersect2(v2, v4, v_begin, v_end)) {
+				if (d4 <= d3) {
+					return vi4;
+				}
+				else {
+					return vi3;
+				}
+			}
+		}
+		
+			res.x = 0;
+			res.y = 0;
+			cout << "error" << endl;
+			return res;
+		
+
 	}
 	bool is_intersect(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
 		
@@ -311,6 +543,18 @@ for (i = 0; i < res_x_texture; i++) {
 		double p1 = dy1 * (x4 - x2) - dx1 * (y4 - y2);
 		double p2 = dy0 * (x2 - x3) - dx0 * (y2 - y3);
 		double p3 = dy0 * (x2 - x4) - dx0 * (y2 - y4);
+		return (p0 * p1 <= 0) && (p2 * p3 <= 0);
+	}
+	bool is_intersect2(Vector2 v1, Vector2 v2, Vector2 v3, Vector2 v4) {
+
+		double dx0 = v2.x - v1.x;
+		double dx1 = v4.x - v3.x;
+		double dy0 = v2.y-v1.y;
+		double dy1 = v4.y-v3.y;
+		double p0 = dy1 * (v4.x-v1.x) - dx1 * (v4.y - v1.y);
+		double p1 = dy1 * (v4.x-v2.x) - dx1 * (v4.y - v2.y);
+		double p2 = dy0 * (v2.x-v3.x) - dx0 * (v2.y-v3.y);
+		double p3 = dy0 * (v2.x-v4.x) - dx0 * (v2.y-v4.y);
 		return (p0 * p1 <= 0) && (p2 * p3 <= 0);
 	}
 	bool is_collision(double x_, double y_) {
@@ -567,9 +811,11 @@ public:
 	bool is_stoped_heights, is_h;
 	bool is_render;
 	bool not_load;
-	
+	sf::Uint8* h_map;
 	sf::Uint8* pixels;
-
+	double light_force;
+	bool is_use_shaders;
+	sf::Glsl::Vec4* u_heights;
 
 	void init(double x_, double y_, double angle_, string bg_main_filename, double ray_step_k, int rx_, int ry_, int n_of_objects_, int n_flat_sprites_, int n_colliders_) {
 		not_load = true;
@@ -596,6 +842,7 @@ public:
 		const sf::Uint8* bg_const = new sf::Uint8[RESOLUTION_X * RESOLUTION_Y * 4 + 4];
 		pixels = new sf::Uint8[RESOLUTION_X * RESOLUTION_Y * 4 + 4];
 		bg_main = new sf::Uint8[RESOLUTION_X * RESOLUTION_Y * 4 + 4];
+		u_heights = new sf::Glsl::Vec4[256];
 		page = 1;
 		flat_sprites.resize(n_flat_sprites);
 		heights.resize(rx, vector<double>(10, 0));
@@ -613,6 +860,7 @@ public:
 		texture_img.loadFromFile("resources\\images\\butt1.png");
 		const sf::Uint8* pixels1 = new sf::Uint8[RESOLUTION_X * RESOLUTION_Y * 4 + 4];
 		sf::Uint8* pixels2 = new sf::Uint8[RESOLUTION_X * RESOLUTION_Y * 4 + 4];
+		h_map = new sf::Uint8[RESOLUTION_X * RESOLUTION_Y * 4 + 4];
 
 		pixels1 = texture_img.getPixelsPtr();
 		int i, j, k;
@@ -650,8 +898,8 @@ public:
 		for (k = 0; k < 360; k++) {
 			for (i = 0; i < rx; i++) {
 				for (j = 0; j < ry / 2; j++) {
-					floor_ceil_pcv_arr[k * rx * ry + i * ry + j * 2] = 1.0 / (ry / 2 - j) * ry / 2 / cos(radians(to_double(i) / rx * 90.0 - 45.0)) * rays_steps[k][i][0] / ray_step;;
-					floor_ceil_pcv_arr[k * rx * ry + i * ry + j * 2 + 1] = 1.0 / (ry / 2 - j) * ry / 2 / cos(radians(to_double(i) / rx * 90.0 - 45.0)) * rays_steps[k][i][1] / ray_step;
+					floor_ceil_pcv_arr[k * rx * ry + i * ry + j * 2] = 1.0 / (ry / 2 - j) * ry / 2 / cos(radians(to_double(i) / rx * d_angle - d_angle/2)) * rays_steps[k][i][0] / ray_step;;
+					floor_ceil_pcv_arr[k * rx * ry + i * ry + j * 2 + 1] = 1.0 / (ry / 2 - j) * ry / 2 / cos(radians(to_double(i) / rx * d_angle - d_angle / 2)) * rays_steps[k][i][1] / ray_step;
 					//floor_ceil_pre_counted_values[k][i][j][0] = 1.0 / (ry / 2 - j) * ry / 2 / cos(radians(to_double(i) / rx * 90.0 - 45.0)) * rays_steps[k][i][0] / ray_step;
 					//floor_ceil_pre_counted_values[k][i][j][1] = 1.0 / (ry / 2 - j) * ry / 2 / cos(radians(to_double(i) / rx * 90.0 - 45.0)) * rays_steps[k][i][1] / ray_step;
 				}
@@ -679,8 +927,6 @@ public:
 	void add_circle(CircleSprite3D sprite, int index_) {
 		circle_sprites[index_] = sprite;
 	}
-
-
 	void load_texture(int texture_code, string filename) {
 		sf::Image texture_img;
 		texture_img.loadFromFile(filename);
@@ -834,9 +1080,13 @@ public:
 		double x_step, y_step;
 		double current_x, current_y, dx, dy, ox, oy, oz; // текущие x y
 		bool sprite_is;
+		Vector2 v_begin;
+		Vector2 v_end;
 		int_angle = round(angle);
 		oz = 0;
-
+		
+		v_begin.x = x;
+		v_begin.y = y;
 		for (i = i_start; i < i_end; i++) {
 			//int_x = trunc(x); // приводим к целому чтобы был индекс массива
 			//int_y = trunc(y); // приводим к целому чтобы был индекс массива
@@ -852,34 +1102,20 @@ public:
 			//cout << x << " " << y << ":" << map[0][2] << " " << int_x <<  " " << int_y << endl;
 			sprite_is = false;
 			heights[i][5] = 0;
-			while ((mAp[current_x][current_y] == 0) and (k < 10 / ray_step)) { // Проверка не врезалось ли
-				current_x += x_step; // делаем шаг x
-				current_y += y_step; // делаем шаг y
-				//int_x = trunc(current_x); // приводим к целому чтобы был индекс массива
-				//int_y = trunc(current_y); // приводим к целому чтобы был индекс массива
-				for (ijk = 0; ijk < n_of_objects; ijk++) {
-					
-					if (sprites_objects[ijk].is_collision(current_x, current_y)) {
-						//cout << "gg" << endl;
-						code = sprites_objects[ijk].get_oz(current_x, current_y, angle).part;
-						oz = sprites_objects[ijk].get_oz(current_x, current_y, angle).oz;
-						k = to_int(10 / ray_step);
-						sprite_is = true;
-					}
-				}
-				
-				
-				k++;
+			while (mAp[current_x][current_y] == 0) { // Проверка не врезалось ли
+				current_x += x_step;
+				current_y += y_step;
+				x_step *= 1.01;
+				y_step *= 1.01;
 			}
+			
 			for (ijk = 0; ijk < n_circle_sprites; ijk++) {
 				Vector2 res, v1, v2, v3;
 				v1.x = circle_sprites[ijk].x;
 				v1.y = circle_sprites[ijk].y;
-				v2.x = x;
-				v2.y = y;
-				v3.x = current_x;
-				v3.y = current_y;
-				res = intersection_circle_line(v1, v2, v3, circle_sprites[ijk].radius);
+				v_end.x = current_x;
+				v_end.y = current_y;
+				res = intersection_circle_line(v1, v_begin, v_end, circle_sprites[ijk].radius);
 
 				if (res.x!=0 || res.y!=0) {
 					code = 0;
@@ -892,6 +1128,41 @@ public:
 					current_y = res.y;
 				}
 			}
+			
+			
+			double code2 = 0;
+			double oz2 = 0;
+			double d = 100000000000;
+			double cx = current_x;
+			double cy = current_y;
+			bool rect_is = false;
+			for (ijk = 0; ijk < n_of_objects; ijk++) {
+				v_end.x = current_x;
+				v_end.y = current_y;
+
+				if (sprites_objects[ijk].intersect(v_begin, v_end)) {
+
+					//cout << "gg" << endl;
+					Vector2 res = sprites_objects[ijk].intersection_rect_line(v_begin, v_end);
+					if (distance_vec2(v_begin, res) < d) {
+						code2 = sprites_objects[ijk].get_oz(res.x, res.y, angle).part;
+						oz2 = sprites_objects[ijk].get_oz(res.x, res.y, angle).oz;
+						sprite_is = true;
+						rect_is = True;
+						cx = res.x;
+						cy = res.y;
+						d = distance_vec2(v_begin, res);
+						heights[i][5] = 0;
+					}
+				}
+			}
+			if (rect_is) {
+				code = code2;
+				oz = oz2;
+				current_x = cx;
+				current_y = cy;
+			}
+			
 			for (ijk = 1; ijk < n_flat_sprites; ijk++) {
 				if (flat_sprites[ijk].is_collision(x, y, current_x, current_y)) {
 
@@ -911,10 +1182,11 @@ public:
 
 						sprites_flat_heights[ijk][i][0] = flat_sprites[ijk].get_oz(vres.x, vres.y);
 						sprites_flat_heights[ijk][i][1] = 1;
+						
 						dx = vres.x - x;
 						dy = vres.y - y;
 						//cout << vres.x << " " << vres.y << endl;
-
+						sprites_flat_heights[ijk][i][3] = sqrt(dx * dx + dy * dy);
 						sprites_flat_heights[ijk][i][2] = abs((1 / (sqrt(dx * dx + dy * dy) * cos(radians(to_double(i) / to_double(rx) * 90.0 - 45.0)))) * ry / 2.0);
 					}
 					catch (...) {
@@ -946,6 +1218,7 @@ public:
 					//cout << vres.x << " " << vres.y << endl;
 
 					sprites_flat_heights[0][i][2] = abs((1 / (sqrt(dx * dx + dy * dy) * cos(radians(to_double(i) / to_double(rx) * 90.0 - 45.0)))) * ry / 2.0);
+					sprites_flat_heights[0][i][3] = sqrt(dx * dx + dy * dy);
 				}
 				catch (...) {
 					cout << "heights flat error" << endl;
@@ -958,7 +1231,10 @@ public:
 			dy = current_y - y;
 			heights[i][3] = dx; // x расстояние
 			heights[i][4] = dy; // y расстояние
-			heights[i][0] = abs((1 / (sqrt(dx * dx + dy * dy) * cos(radians(to_double(i) / to_double(rx) * 90.0 - 45.0)))) * ry / 2.0); // высота
+			heights[i][8] = sqrt(dx * dx + dy * dy);
+			//cout << heights[i][8] << endl;
+			double a = abs((1 / (sqrt(dx * dx + dy * dy) * cos(radians(to_double(i) / to_double(rx) * 90.0 - 45.0)))) * ry / 2.0);
+			heights[i][0] = a; // высота
 			//cout << heights[i][0] << endl;
 			if (not sprite_is) {
 				code = mAp[current_x][current_y]; // код текстуры
@@ -976,9 +1252,9 @@ public:
 			}
 			heights[i][1] = oz; // нужное смещение
 			heights[i][2] = code; // код текстуры
+		
 		}
 	}
-
 	void stage_heights() {
 		int i;
 		if (page == 1) {
@@ -1016,10 +1292,11 @@ public:
 	}
 	void thread_stage_render(int i_start, int i_end, int threads_number, int alpha) {
 		int i, j, k, code, pix0, pix1, pix2, pix02, pix12, pix22, arxf, aryf, up_code,down_code, ijk, ij;
-		double oz, i1, i2, i3, i4, distance_for_floor, dx_f, dy_f, ox_f, oy_f, light1, max_h, i2_s, i3_s;
+		double oz, i1, i2, i3, i4, distance_for_floor, dx_f, dy_f, ox_f, oy_f, light1, max_h, i2_s, i3_s, distance_to_pixel_up, dtpus, dtpds, distance_to_pixel_down;
 		int pix0_s, pix1_s, pix2_s, pix00_s, pix11_s, pix22_s, pix0_s2, pix1_s2, pix2_s2, pix00_s2, pix11_s2, pix22_s2;
 		bool sprite_is;
 		sprite_is = true;
+		double scale_depth = light_force;
 		if (page == 1) {
 #pragma omp parallel for 
 			for (i = i_start; i < i_start + rx / threads_number; i++) {
@@ -1044,6 +1321,12 @@ public:
 							sprite_is = true;
 					}
 					if ((ry / 2 - j) < heights[i][0]) {
+						if (is_use_shaders) {
+							distance_to_pixel_up = heights[i][8];
+							distance_to_pixel_down = heights[i][8];
+							dtpus = 0;
+							dtpds = 0;
+						}
 						light1 = sqrt(sqrt(sqrt(sqrt(1 / heights[i][0] * 10000))));
 						oz = heights[i][1];
 						code = to_int(heights[i][2]);
@@ -1084,12 +1367,16 @@ public:
 										pix0_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][0];
 										pix1_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][1];
 										pix2_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][2];
+										if (is_use_shaders) {
+											dtpus = sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][3];
+										}
 									}
 									if (pix00_s == 0 && pix11_s == 0 and pix22_s == 0) {
 										i3_s = ry / 2 - ry / 2 / sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][2] * (j - ry / 2);
 										pix00_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][0];
 										pix11_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][1];
 										pix22_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][2];
+										if (is_use_shaders) dtpds = sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][3];
 									}
 
 								}
@@ -1106,6 +1393,7 @@ public:
 							pix1_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][1];
 							pix2_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][2];
 							if (pix0_s2 != 0 || pix1_s2 != 0 || pix2_s2 != 0) {
+								if (is_use_shaders) dtpus = sprites_flat_heights[0][i][3];
 								pix0_s = pix0_s2;
 								pix1_s = pix1_s2;
 								pix2_s = pix2_s2;
@@ -1116,6 +1404,7 @@ public:
 							pix11_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][1];
 							pix22_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][2];
 							if (pix00_s2 != 0 || pix11_s2 != 0 || pix22_s2 != 0) {
+								if (is_use_shaders) dtpds = sprites_flat_heights[0][i][3];
 								pix00_s = pix00_s2;
 								pix11_s = pix11_s2;
 								pix22_s = pix22_s2;
@@ -1140,6 +1429,7 @@ public:
 								pix0 = pix0_s;
 								pix1 = pix1_s;
 								pix2 = pix2_s;
+								if (is_use_shaders) distance_to_pixel_up = dtpus;
 							}
 							if (pix00_s == 0 && pix11_s == 0 && pix22_s == 0) {
 								if (heights[i][5] == 0) {
@@ -1158,7 +1448,9 @@ public:
 								pix02 = pix00_s;
 								pix12 = pix11_s;
 								pix22 = pix22_s;
+								if (is_use_shaders) distance_to_pixel_down = dtpds;
 							}
+							
 						
 						pixels[j * rx * 4 + i * 4] = pix0;
 						pixels[j * rx * 4 + i * 4 + 1] = pix1;
@@ -1166,11 +1458,26 @@ public:
 						pixels[(ry - j - 1) * rx * 4 + i * 4] = pix02;
 						pixels[(ry - j - 1) * rx * 4 + i * 4 + 1] = pix12;
 						pixels[(ry - j - 1) * rx * 4 + i * 4 + 2] = pix22;
+						if (is_use_shaders) {
+							h_map[j * rx * 4 + i * 4] = to_int(min(255.0, distance_to_pixel_up * scale_depth));
+							h_map[(ry - j - 1) * rx * 4 + i * 4] = to_int(min(255.0, distance_to_pixel_down * scale_depth));
+							h_map[j * rx * 4 + i * 4 + 1] = to_int(min(255.0, distance_to_pixel_up * scale_depth));
+							h_map[(ry - j - 1) * rx * 4 + i * 4 + 1] = to_int(min(255.0, distance_to_pixel_down * scale_depth));
+							h_map[j * rx * 4 + i * 4 + 2] = to_int(min(255.0, distance_to_pixel_up * scale_depth));
+							h_map[(ry - j - 1) * rx * 4 + i * 4 + 2] = to_int(min(255.0, distance_to_pixel_down * scale_depth));
+							h_map[j * rx * 4 + i * 4 + 3] = 255;
+							h_map[(ry - j - 1) * rx * 4 + i * 4 + 3] = 255;
+						}
 						//cout << pix0 << " " <<  pix1 << endl;
 					}
 					
 					else {
-						
+						if (is_use_shaders) {
+						distance_to_pixel_up = heights[i][8];
+						distance_to_pixel_down = heights[i][8];
+						dtpus = distance_to_pixel_up;
+						dtpds = distance_to_pixel_down;
+					}
 						pix0_s = 0;
 						pix1_s = 0;
 						pix2_s = 0;
@@ -1198,12 +1505,14 @@ public:
 										pix0_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][0];
 										pix1_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][1];
 										pix2_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][2];
+										if (is_use_shaders) dtpus = sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][3];
 									}
 									if (pix00_s == 0 && pix11_s == 0 and pix22_s == 0) {
 										i3_s = ry / 2 - ry / 2 / sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][2] * (j - ry / 2);
 										pix00_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][0];
 										pix11_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][1];
 										pix22_s = flat_sprites[sorted_i_sf[i][ijk][0]].image[flat_sprites[sorted_i_sf[i][ijk][0]].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][0] * flat_sprites[sorted_i_sf[i][ijk][0]].texture_size_x)][2];
+										if (is_use_shaders) dtpds = sprites_flat_heights[sorted_i_sf[i][ijk][0]][i][3];
 									}
 
 								}
@@ -1220,6 +1529,7 @@ public:
 							pix1_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][1];
 							pix2_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i2_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][2];
 							if (pix0_s2 != 0 || pix1_s2 != 0 || pix2_s2 != 0) {
+								if (is_use_shaders) dtpus = sprites_flat_heights[0][i][3];
 								pix0_s = pix0_s2;
 								pix1_s = pix1_s2;
 								pix2_s = pix2_s2;
@@ -1230,6 +1540,9 @@ public:
 							pix11_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][1];
 							pix22_s2 = flat_sprites[0].image[flat_sprites[0].ctc][i3_s][min((double)ry - 1, sprites_flat_heights[0][i][0] * flat_sprites[0].texture_size_x)][2];
 							if (pix00_s2 != 0 || pix11_s2 != 0 || pix22_s2 != 0) {
+ 
+								
+								if (is_use_shaders) dtpds = sprites_flat_heights[0][i][3];
 								pix00_s = pix00_s2;
 								pix11_s = pix11_s2;
 								pix22_s = pix22_s2;
@@ -1253,34 +1566,50 @@ public:
 						arxf = abs(ry * ox_f);
 						aryf = abs(ry * oy_f);
 						//cout << arxf << endl;
-						up_code = mAp_ceil[dx_f][dy_f];
-						down_code = mAp_floor[dx_f][dy_f];
-
-						if (pix0_s == 0 && pix1_s == 0 && pix2_s == 0) {
-							pixels[j * rx * 4 + i * 4] = textures[up_code][arxf][aryf][0];
-							pixels[j * rx * 4 + i * 4 + 1] = textures[up_code][arxf][aryf][1];
-							pixels[j * rx * 4 + i * 4 + 2] = textures[up_code][arxf][aryf][2];
-							//cout << ry / 2 / heights[i][0] * (ry / 2 + j - 1) << endl;
-
-						}
-						else {
-							pixels[j * rx * 4 + i * 4] = pix0_s;
-							pixels[j * rx * 4 + i * 4 + 1] = pix1_s;
-							pixels[j * rx * 4 + i * 4 + 2] = pix2_s;
-
-						}
-						if (pix00_s == 0 && pix11_s == 0 && pix22_s == 0) {
-							//cout << angle << endl;
-							pixels[(ry - j - 1) * rx * 4 + i * 4] = textures[down_code][arxf][aryf][0];
-							pixels[(ry - j - 1) * rx * 4 + i * 4 + 1] = textures[down_code][arxf][aryf][1];
-							pixels[(ry - j - 1) * rx * 4 + i * 4 + 2] = textures[down_code][arxf][aryf][2];
-						}
-						else {
-							pixels[(ry - j - 1) * rx * 4 + i * 4] = pix00_s;
-							pixels[(ry - j - 1) * rx * 4 + i * 4 + 1] = pix11_s;
-							pixels[(ry - j - 1) * rx * 4 + i * 4 + 2] = pix22_s;
-						}
 						
+							up_code = mAp_ceil[dx_f][dy_f];
+							down_code = mAp_floor[dx_f][dy_f];
+
+							if (pix0_s == 0 && pix1_s == 0 && pix2_s == 0) {
+								pixels[j * rx * 4 + i * 4] = textures[up_code][arxf][aryf][0];
+								pixels[j * rx * 4 + i * 4 + 1] = textures[up_code][arxf][aryf][1];
+								pixels[j * rx * 4 + i * 4 + 2] = textures[up_code][arxf][aryf][2];
+								//cout << ry / 2 / heights[i][0] * (ry / 2 + j - 1) << endl;
+								if (is_use_shaders) distance_to_pixel_up = sqrt(floor_ceil_pcv_arr[(int)angle * rx * ry + i * ry + j * 2] * floor_ceil_pcv_arr[(int)angle * rx * ry + i * ry + j * 2] + floor_ceil_pcv_arr[(int)angle * rx * ry + i * ry + j * 2 + 1] * floor_ceil_pcv_arr[(int)angle * rx * ry + i * ry + j * 2 + 1]);
+
+							}
+							else {
+								pixels[j * rx * 4 + i * 4] = pix0_s;
+								pixels[j * rx * 4 + i * 4 + 1] = pix1_s;
+								pixels[j * rx * 4 + i * 4 + 2] = pix2_s;
+								if (is_use_shaders) distance_to_pixel_up = dtpus;
+
+							}
+							if (pix00_s == 0 && pix11_s == 0 && pix22_s == 0) {
+
+								//cout << angle << endl;
+								pixels[(ry - j - 1) * rx * 4 + i * 4] = textures[down_code][arxf][aryf][0];
+								pixels[(ry - j - 1) * rx * 4 + i * 4 + 1] = textures[down_code][arxf][aryf][1];
+								pixels[(ry - j - 1) * rx * 4 + i * 4 + 2] = textures[down_code][arxf][aryf][2];
+								if (is_use_shaders) distance_to_pixel_down = sqrt(floor_ceil_pcv_arr[(int)angle * rx * ry + i * ry + j * 2] * floor_ceil_pcv_arr[(int)angle * rx * ry + i * ry + j * 2] + floor_ceil_pcv_arr[(int)angle * rx * ry + i * ry + j * 2 + 1] * floor_ceil_pcv_arr[(int)angle * rx * ry + i * ry + j * 2 + 1]);
+								
+							}
+							else {
+								pixels[(ry - j - 1) * rx * 4 + i * 4] = pix00_s;
+								pixels[(ry - j - 1) * rx * 4 + i * 4 + 1] = pix11_s;
+								pixels[(ry - j - 1) * rx * 4 + i * 4 + 2] = pix22_s;
+								if (is_use_shaders) distance_to_pixel_down = dtpds;
+							}
+							if (is_use_shaders) {
+								h_map[j * rx * 4 + i * 4] = to_int(min(255.0, distance_to_pixel_up * scale_depth));
+								h_map[(ry - j - 1) * rx * 4 + i * 4] = to_int(min(255.0, distance_to_pixel_down * scale_depth));
+								h_map[j * rx * 4 + i * 4 + 1] = to_int(min(255.0, distance_to_pixel_up * scale_depth));
+								h_map[(ry - j - 1) * rx * 4 + i * 4 + 1] = to_int(min(255.0, distance_to_pixel_down * scale_depth));
+								h_map[j * rx * 4 + i * 4 + 2] = to_int(min(255.0, distance_to_pixel_up * scale_depth));
+								h_map[(ry - j - 1) * rx * 4 + i * 4 + 2] = to_int(min(255.0, distance_to_pixel_down * scale_depth));
+								h_map[j * rx * 4 + i * 4 + 3] = 255;
+								h_map[(ry - j - 1) * rx * 4 + i * 4 + 3] = 255;
+							}
 					}
 					if (0 < j && j < 64 && 0 < i && i < 128 && is_butt_1) {
 						pixels[j * rx * 4 + i * 4] = butt1[i - 1][j - 1][0];
@@ -1294,12 +1623,13 @@ public:
 			
 		}
 	}
-
+	sf::Uint8* return_h_map() {
+		return h_map;
+	}
 	void thread_stage_render_heights(int i_start, int i_end, int threads_number, int alpha) {
 		thread_stage_heights(i_start, i_end, threads_number);
 		thread_stage_render(i_start, i_end, threads_number, alpha);
 	}
-	
 	sf::Uint8* stage_render(sf::Texture texture_target, sf::Sprite sprite_target, int alpha) {
 		int i;
 
@@ -1319,9 +1649,6 @@ public:
 		}
 		return pixels;
 	}
-		
-		
-	
 	sf::Uint8* alternative_stage(sf::Texture texture_target, sf::Sprite sprite_target, int alpha) {
 		//cout << "stage_render" << endl;
 		int i;
@@ -1356,7 +1683,6 @@ public:
 		}
 		return pixels;
 	}
-
 	void step_left(double step) {
 		bool coll;
 		int i;
@@ -1368,19 +1694,39 @@ public:
 		integer_y = trunc(y);
 		coll = mAp[integer_x][integer_y] > 0;
 		for (i = 0; i < n_of_objects; i++) {
-			if (sprites_objects[i].is_collision(x, y)) {
+			Vector2 begin, end;
+			begin.x = x_past;
+			begin.y = y_past;
+			end.x = x;
+			end.y = y;
+
+			if (sprites_objects[i].intersect(begin, end)) {
 				coll = true;
 				break;
 			}
 		}
 		for (i = 0; i < n_colliders; i++) {
-			if (unv_rect_collision[i].is_collision(x, y)) {
+			Vector2 begin, end;
+			begin.x = x_past;
+			begin.y = y_past;
+			end.x = x;
+			end.y = y;
+
+			if (unv_rect_collision[i].intersect(begin, end)) {
 				coll = true;
 				break;
 			}
 		}
 		for (i = 0; i < n_circle_sprites; i++) {
-			if (circle_sprites[i].is_collision(x, y)) {
+			Vector2 center, begin, end;
+			center.x = circle_sprites[i].x;
+			center.y = circle_sprites[i].y;
+			begin.x = x_past;
+			begin.y = y_past;
+			end.x = x;
+			end.y = y;
+			Vector2 res = intersection_circle_line(center, begin, end, circle_sprites[i].radius);
+			if (res.x !=0 || res.y != 0) {
 				coll = true;
 				break;
 			}
@@ -1401,19 +1747,39 @@ public:
 		integer_y = trunc(y);
 		coll = mAp[integer_x][integer_y] > 0;
 		for (i = 0; i < n_of_objects; i++) {
-			if (sprites_objects[i].is_collision(x, y)) {
+			Vector2 begin, end;
+			begin.x = x_past;
+			begin.y = y_past;
+			end.x = x;
+			end.y = y;
+
+			if (sprites_objects[i].intersect(begin, end)) {
 				coll = true;
 				break;
 			}
 		}
 		for (i = 0; i < n_colliders; i++) {
-			if (unv_rect_collision[i].is_collision(x, y)) {
+			Vector2 begin, end;
+			begin.x = x_past;
+			begin.y = y_past;
+			end.x = x;
+			end.y = y;
+
+			if (unv_rect_collision[i].intersect(begin, end)) {
 				coll = true;
 				break;
 			}
 		}
 		for (i = 0; i < n_circle_sprites; i++) {
-			if (circle_sprites[i].is_collision(x, y)) {
+			Vector2 center, begin, end;
+			center.x = circle_sprites[i].x;
+			center.y = circle_sprites[i].y;
+			begin.x = x_past;
+			begin.y = y_past;
+			end.x = x;
+			end.y = y;
+			Vector2 res = intersection_circle_line(center, begin, end, circle_sprites[i].radius);
+			if (res.x != 0 || res.y != 0) {
 				coll = true;
 				break;
 			}
@@ -1434,19 +1800,39 @@ public:
 		integer_y = trunc(y);
 		coll = mAp[integer_x][integer_y] > 0;
 		for (i = 0; i < n_of_objects; i++) {
-			if (sprites_objects[i].is_collision(x, y)) {
+			Vector2 begin, end;
+			begin.x = x_past;
+			begin.y = y_past;
+			end.x = x;
+			end.y = y;
+
+			if (sprites_objects[i].intersect(begin, end)) {
 				coll = true;
 				break;
 			}
 		}
 		for (i = 0; i < n_colliders; i++) {
-			if (unv_rect_collision[i].is_collision(x, y)) {
+			Vector2 begin, end;
+			begin.x = x_past;
+			begin.y = y_past;
+			end.x = x;
+			end.y = y;
+
+			if (unv_rect_collision[i].intersect(begin, end)) {
 				coll = true;
 				break;
 			}
 		}
 		for (i = 0; i < n_circle_sprites; i++) {
-			if (circle_sprites[i].is_collision(x, y)) {
+			Vector2 center, begin, end;
+			center.x = circle_sprites[i].x;
+			center.y = circle_sprites[i].y;
+			begin.x = x_past;
+			begin.y = y_past;
+			end.x = x;
+			end.y = y;
+			Vector2 res = intersection_circle_line(center, begin, end, circle_sprites[i].radius);
+			if (res.x !=0 || res.y != 0) {
 				coll = true;
 				break;
 			}
@@ -1467,19 +1853,39 @@ public:
 		integer_y = trunc(y);
 		coll = mAp[integer_x][integer_y] > 0;
 		for (i = 0; i < n_of_objects; i++) {
-			if (sprites_objects[i].is_collision(x, y)) {
+			Vector2 begin, end;
+			begin.x = x_past;
+			begin.y = y_past;
+			end.x = x;
+			end.y = y;
+
+			if (sprites_objects[i].intersect(begin, end)) {
 				coll = true;
 				break;
 			}
 		}
 		for (i = 0; i < n_colliders; i++) {
-			if (unv_rect_collision[i].is_collision(x, y)) {
+			Vector2 begin, end;
+			begin.x = x_past;
+			begin.y = y_past;
+			end.x = x;
+			end.y = y;
+
+			if (unv_rect_collision[i].intersect(begin, end)) {
 				coll = true;
 				break;
 			}
 		}
 		for (i = 0; i < n_circle_sprites; i++) {
-			if (circle_sprites[i].is_collision(x, y)) {
+			Vector2 center, begin, end;
+			center.x = circle_sprites[i].x;
+			center.y = circle_sprites[i].y;
+			begin.x = x_past;
+			begin.y = y_past;
+			end.x = x;
+			end.y = y;
+			Vector2 res = intersection_circle_line(center, begin, end, circle_sprites[i].radius);
+			if (res.x != 0 || res.y != 0) {
 				coll = true;
 				break;
 			}
@@ -1759,17 +2165,6 @@ public:
 		set_map_ceil(ceil_filename);
 		in.close();
 	}
-
 };
-
-	//void renderTo(window_){
-	//	int i, j, k;
-	//	for (i = 0; i < rx; i++) {
-	//		for (j = 0; j < ry; j++) {
-	//			sf::Vertex point(sf::Vector2f(i, j), sf::Color{128,128,128});
-	//			window_.draw(&point, 1, sf::Points);
-	//		}
-	//	}
-	//}
 
 #endif
