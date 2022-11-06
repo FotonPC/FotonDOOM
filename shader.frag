@@ -5,11 +5,23 @@ uniform vec3 u_pos;
 uniform float u_time;
 uniform sampler2D u_sample;
 uniform sampler2D u_h_map;
+uniform sampler2D u_flat_sprites_info;
+uniform sampler2D u_textures[16];
 uniform int rx;
 uniform int ry;
 uniform float u_viewnetka;
 uniform float u_blur;
-
+const vec4 bitEnc = vec4(1.,255.,65025.,16581375.);
+const vec4 bitDec = 1./bitEnc;
+vec4 EncodeFloatRGBA (float v) {
+    vec4 enc = bitEnc * v;
+    enc = fract(enc);
+    enc -= enc.yzww * vec2(1./255., 0.).xxxy;
+    return enc;
+}
+float DecodeFloatRGBA (vec4 v) {
+    return dot(v, bitDec);
+}
 
 const float MAX_DIST = 99999.0;
 const int MAX_REF = 8;

@@ -777,7 +777,7 @@ class Engine3D {
 
 public:
 	int rx, ry, RESOLUTION_X, RESOLUTION_Y;
-	double x, y, angle;
+	double x, y, angle, d_angle;
 	map<char, int> floor_dir;
 	map<char, int> ceil_dir;
 	map<char, int> map_dir;
@@ -793,11 +793,12 @@ public:
 	vector<FlatSprite3D> flat_sprites;
 	vector<UnvisibleRectSprite3D> unv_rect_collision;
 	vector<CircleSprite3D> circle_sprites;
+
 	float* floor_ceil_pcv_arr;
 	thread* threads_heights;
 	thread* threads_render;
 	thread* threads_;
-	int d_angle;
+	//int d_angle;
 	int threads_num;
 	int integer_x, integer_y, page, map_width, map_height, n_of_objects, n_flat_sprites, n_colliders, n_circle_sprites;
 	
@@ -930,6 +931,7 @@ public:
 	void load_texture(int texture_code, string filename) {
 		sf::Image texture_img;
 		texture_img.loadFromFile(filename);
+
 		const sf::Uint8* pixels1 = new sf::Uint8[RESOLUTION_X * RESOLUTION_Y * 4 + 4];
 		sf::Uint8* pixels2 = new sf::Uint8[RESOLUTION_X * RESOLUTION_Y * 4 + 4];
 
@@ -1187,7 +1189,7 @@ public:
 						dy = vres.y - y;
 						//cout << vres.x << " " << vres.y << endl;
 						sprites_flat_heights[ijk][i][3] = sqrt(dx * dx + dy * dy);
-						sprites_flat_heights[ijk][i][2] = abs((1 / (sqrt(dx * dx + dy * dy) * cos(radians(to_double(i) / to_double(rx) * 90.0 - 45.0)))) * ry / 2.0);
+						sprites_flat_heights[ijk][i][2] = abs((1 / (sqrt(dx * dx + dy * dy) * cos(radians(to_double(i) / to_double(rx) * d_angle - d_angle/2)))) * ry / 2.0);
 					}
 					catch (...) {
 						cout << "heights flat error" << endl;
@@ -1217,7 +1219,7 @@ public:
 					dy = vres.y - y;
 					//cout << vres.x << " " << vres.y << endl;
 
-					sprites_flat_heights[0][i][2] = abs((1 / (sqrt(dx * dx + dy * dy) * cos(radians(to_double(i) / to_double(rx) * 90.0 - 45.0)))) * ry / 2.0);
+					sprites_flat_heights[0][i][2] = abs((1 / (sqrt(dx * dx + dy * dy) * cos(radians(to_double(i) / to_double(rx) * d_angle - d_angle/2)))) * ry / 2.0);
 					sprites_flat_heights[0][i][3] = sqrt(dx * dx + dy * dy);
 				}
 				catch (...) {
@@ -1233,7 +1235,7 @@ public:
 			heights[i][4] = dy; // y расстояние
 			heights[i][8] = sqrt(dx * dx + dy * dy);
 			//cout << heights[i][8] << endl;
-			double a = abs((1 / (sqrt(dx * dx + dy * dy) * cos(radians(to_double(i) / to_double(rx) * 90.0 - 45.0)))) * ry / 2.0);
+			double a = abs((1 / (sqrt(dx * dx + dy * dy) * cos(radians(to_double(i) / to_double(rx) * d_angle - d_angle/2)))) * ry / 2.0);
 			heights[i][0] = a; // высота
 			//cout << heights[i][0] << endl;
 			if (not sprite_is) {
